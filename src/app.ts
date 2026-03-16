@@ -9,8 +9,8 @@ import xss from 'xss-clean';
 import config from './config/config';
 import { jwtStrategy } from './config/passport';
 import * as morgan from './config/morgan';
+import { authLimiter } from './middlewares/rateLimiter';
 import { errorConverter, errorHandler } from './middlewares/error';
-import authLimiter from './middlewares/rateLimiter';
 import routes from './routes/v1';
 import ApiError from './utils/ApiError';
 

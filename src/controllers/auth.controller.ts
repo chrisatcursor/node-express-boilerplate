@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { ParsedQs } from 'qs';
 import catchAsync from '../utils/catchAsync';
 import ApiError from '../utils/ApiError';
 import { authService, emailService, tokenService, userService } from '../services';
@@ -11,6 +10,10 @@ import {
   RegisterBody,
   ResetPasswordBody,
 } from '../validations/auth.validation';
+
+interface TokenRequestQuery {
+  token?: string;
+}
 
 export const register = catchAsync(async (req: Request<Record<string, never>, unknown, RegisterBody>, res: Response) => {
   const user = await userService.createUser(req.body);
@@ -27,12 +30,10 @@ export const login = catchAsync(async (req: Request<Record<string, never>, unkno
   res.send({ user, tokens });
 });
 
-export const logout = catchAsync(
-  async (req: Request<Record<string, never>, unknown, RefreshTokenBody>, res: Response) => {
-    await authService.logout(req.body.refreshToken);
-    res.status(httpStatus.NO_CONTENT).send();
-  }
-);
+export const logout = catchAsync(async (req: Request<Record<string, never>, unknown, RefreshTokenBody>, res: Response) => {
+  await authService.logout(req.body.refreshToken);
+  res.status(httpStatus.NO_CONTENT).send();
+});
 
 export const refreshTokens = catchAsync(
   async (req: Request<Record<string, never>, unknown, RefreshTokenBody>, res: Response) => {
@@ -50,7 +51,7 @@ export const forgotPassword = catchAsync(
 );
 
 export const resetPassword = catchAsync(
-  async (req: Request<Record<string, never>, unknown, ResetPasswordBody, ParsedQs>, res: Response) => {
+  async (req: Request<Record<string, never>, unknown, ResetPasswordBody, TokenRequestQuery>, res: Response) => {
     await authService.resetPassword(String(req.query.token), req.body.password);
     res.status(httpStatus.NO_CONTENT).send();
   }
@@ -67,7 +68,7 @@ export const sendVerificationEmail = catchAsync(async (req: Request, res: Respon
 });
 
 export const verifyEmail = catchAsync(
-  async (req: Request<Record<string, never>, unknown, Record<string, never>, ParsedQs>, res: Response) => {
+  async (req: Request<Record<string, never>, unknown, Record<string, never>, TokenRequestQuery>, res: Response) => {
     await authService.verifyEmail(String(req.query.token));
     res.status(httpStatus.NO_CONTENT).send();
   }

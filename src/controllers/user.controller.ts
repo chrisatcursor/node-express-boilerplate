@@ -11,13 +11,15 @@ export const createUser = catchAsync(async (req: Request<Record<string, never>, 
   res.status(httpStatus.CREATED).send(user);
 });
 
-export const getUsers = catchAsync(async (req: Request<Record<string, never>, unknown, unknown, GetUsersQuery>, res: Response) => {
-  const filter = pick(req.query, ['name', 'role'] as const);
-  const options = pick(req.query, ['sortBy', 'limit', 'page'] as const);
-  const result = await userService.queryUsers(filter, options);
+export const getUsers = catchAsync(
+  async (req: Request<Record<string, never>, unknown, unknown, GetUsersQuery>, res: Response) => {
+    const filter = pick(req.query, ['name', 'role'] as const);
+    const options = pick(req.query, ['sortBy', 'limit', 'page'] as const);
+    const result = await userService.queryUsers(filter, options);
 
-  res.send(result);
-});
+    res.send(result);
+  }
+);
 
 export const getUser = catchAsync(async (req: Request<UserParams>, res: Response) => {
   const user = await userService.getUserById(req.params.userId);

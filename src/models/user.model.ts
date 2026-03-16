@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import mongoose, { Document, FilterQuery, HookNextFunction, Model, Types } from 'mongoose';
+import mongoose, { Document, FilterQuery, HookNextFunction, Types } from 'mongoose';
 import validator from 'validator';
 import { Role, roles } from '../config/roles';
 import { paginate, PaginateModel, PaginateOptions, QueryResult, toJSON } from './plugins';
@@ -70,14 +70,13 @@ const userSchema = new mongoose.Schema<IUserDocument, IUserModel>(
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
 
-userSchema.static('isEmailTaken', async function isEmailTaken(
-  this: IUserModel,
-  email: string,
-  excludeUserId?: Types.ObjectId | string
-): Promise<boolean> {
-  const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
-  return Boolean(user);
-});
+userSchema.static(
+  'isEmailTaken',
+  async function isEmailTaken(this: IUserModel, email: string, excludeUserId?: Types.ObjectId | string): Promise<boolean> {
+    const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
+    return Boolean(user);
+  }
+);
 
 userSchema.method('isPasswordMatch', async function isPasswordMatch(password: string): Promise<boolean> {
   return bcrypt.compare(password, this.password);
