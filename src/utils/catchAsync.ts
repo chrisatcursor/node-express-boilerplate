@@ -1,11 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 
-const catchAsync = <
-  P extends Record<string, string> = Record<string, string>,
-  ResBody = unknown,
-  ReqBody = unknown,
-  ReqQuery extends Record<string, unknown> = Record<string, unknown>
->(
+const catchAsync = <P = Record<string, string>, ResBody = unknown, ReqBody = unknown, ReqQuery = Request['query']>(
   fn: (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response<ResBody>, next: NextFunction) => Promise<unknown>
 ): RequestHandler<P, ResBody, ReqBody, ReqQuery> => {
   return (req, res, next) => {

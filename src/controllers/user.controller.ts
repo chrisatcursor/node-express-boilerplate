@@ -21,7 +21,7 @@ export const getUsers = catchAsync(
   }
 );
 
-export const getUser = catchAsync(async (req: Request<UserParams>, res: Response) => {
+export const getUser = catchAsync<UserParams>(async (req: Request<UserParams>, res: Response) => {
   const user = await userService.getUserById(req.params.userId);
 
   if (!user) {
@@ -31,12 +31,14 @@ export const getUser = catchAsync(async (req: Request<UserParams>, res: Response
   res.send(user);
 });
 
-export const updateUser = catchAsync(async (req: Request<UserParams, unknown, UpdateUserBody>, res: Response) => {
-  const user = await userService.updateUserById(req.params.userId, req.body);
-  res.send(user);
-});
+export const updateUser = catchAsync<UserParams, unknown, UpdateUserBody>(
+  async (req: Request<UserParams, unknown, UpdateUserBody>, res: Response) => {
+    const user = await userService.updateUserById(req.params.userId, req.body);
+    res.send(user);
+  }
+);
 
-export const deleteUser = catchAsync(async (req: Request<UserParams>, res: Response) => {
+export const deleteUser = catchAsync<UserParams>(async (req: Request<UserParams>, res: Response) => {
   await userService.deleteUserById(req.params.userId);
   res.status(httpStatus.NO_CONTENT).send();
 });
