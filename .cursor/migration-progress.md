@@ -11,9 +11,9 @@
 | Batch | Scope | Status | Linear ID | PR | Agent Thread | Started | Completed | Notes |
 |-------|-------|--------|-----------|-----|-------------|---------|-----------|-------|
 | 0 | TS toolchain | done | FED-58 | [PR #1](https://github.com/chrisatcursor/node-express-boilerplate/pull/1) | local | 2026-03-16 | 2026-03-16 | Executed locally |
-| 1 | config/utils | pending | FED-59 | -- | -- | -- | -- | |
-| 2 | models | pending | FED-60 | -- | -- | -- | -- | |
-| 3 | validations | pending | FED-61 | -- | -- | -- | -- | |
+| 1 | config/utils | done | FED-59 | [PR #4](https://github.com/chrisatcursor/node-express-boilerplate/pull/4) | subagent | 2026-03-16 | 2026-03-16 | 9 files converted |
+| 2 | models | done | FED-60 | [PR #3](https://github.com/chrisatcursor/node-express-boilerplate/pull/3) | subagent | 2026-03-16 | 2026-03-16 | 6 files, Document interfaces |
+| 3 | validations | done | FED-61 | [PR #2](https://github.com/chrisatcursor/node-express-boilerplate/pull/2) | subagent | 2026-03-16 | 2026-03-16 | 4 files converted |
 | 4 | middlewares | pending | FED-62 | -- | -- | -- | -- | |
 | 5 | services | pending | FED-63 | -- | -- | -- | -- | |
 | 6 | controllers | pending | FED-64 | -- | -- | -- | -- | |
@@ -65,5 +65,29 @@
 - Verification: 113 tests pass, 100% coverage, no new lint errors
 - Note: tsc --noEmit returns TS18003 (no .ts inputs) — expected until Batch 1
 - Note: Used @typescript-eslint@5 and ts-jest@26 for ESLint 7 and Jest 26 compat
+
+</details>
+
+### 2026-03-16 10:30 — Batches 1, 2, 3 dispatched in parallel
+
+<details>
+<summary>Details</summary>
+
+- Dispatched three parallel subagents for independent batches
+- Batch 1: src/config/ (6) + src/utils/ (3) — leaf units, no downstream deps
+- Batch 2: src/models/ (6) — shared-infra, Mongoose Document interfaces
+- Batch 3: src/validations/ (4) — independent of models
+
+</details>
+
+### 2026-03-16 10:55 — Batches 1, 2, 3 completed and merged
+
+<details>
+<summary>Details</summary>
+
+- All three PRs merged to migration/typescript-linear
+- Post-merge verification: 113 tests pass, 100% coverage
+- 19 of 36 source files now TypeScript (53%)
+- Next eligible: Batches 4, 5 (both depend on Batch 2, now done)
 
 </details>
