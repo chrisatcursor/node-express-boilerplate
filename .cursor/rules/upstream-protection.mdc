@@ -1,0 +1,36 @@
+---
+description: Upstream protection — all work stays in the ChrisatCursor fork
+globs:
+alwaysApply: true
+---
+
+# Upstream Protection Rule
+
+This repository is a fork of `hagopj13/node-express-boilerplate`. The upstream repo is NOT ours.
+
+## You MUST follow these rules for every git operation:
+
+### Pushing Code
+- ONLY push to the `ChrisatCursor` fork. The remote origin after cloning this repo should be `github.com/ChrisatCursor/node-express-boilerplate`.
+- NEVER push to `hagopj13/node-express-boilerplate`.
+- Before pushing, run `git remote -v` and confirm the push target is `ChrisatCursor`.
+
+### Pull Requests
+- ONLY open pull requests targeting the `ChrisatCursor` fork.
+- The base repository for any PR MUST be `ChrisatCursor/node-express-boilerplate`.
+- NEVER open a pull request against `hagopj13/node-express-boilerplate`.
+- When using `gh pr create`, always specify: `gh pr create --repo ChrisatCursor/node-express-boilerplate`
+
+### Branching
+- Do not modify the main/master branch directly. Create a feature or migration branch and PR it into the fork's main/master.
+
+### Verification Before Any Push or PR
+Run this check and confirm BEFORE every push or PR creation:
+```
+git remote -v
+# ✅ origin should show: github.com/ChrisatCursor/node-express-boilerplate
+# ❌ If origin shows hagopj13/, STOP and fix it
+```
+
+### Why This Matters
+This is a fork of someone else's open-source project used as a starting point for a migration demo. We have no business pushing code or PRs to the original project. All work stays in our fork.
