@@ -1,0 +1,42 @@
+---
+description: Prevent JavaScript regression during TypeScript migration
+globs: src/**
+---
+
+# No JavaScript in Source
+
+This codebase is being migrated from JavaScript to TypeScript. These rules prevent regression.
+
+## Rules
+
+1. **No new `.js` files in `src/`** — All new source files must use `.ts` extension. Existing `.js` files should only be modified to convert them to `.ts`.
+
+2. **No `require()` in source files** — Use ES module `import` syntax:
+   - ❌ `const x = require('x')`
+   - ✅ `import x from 'x'`
+   - ❌ `const { a } = require('x')`
+   - ✅ `import { a } from 'x'`
+
+3. **No `module.exports` in source files** — Use ES module `export` syntax:
+   - ❌ `module.exports = x`
+   - ✅ `export default x`
+   - ❌ `module.exports = { a, b }`
+   - ✅ `export { a, b }`
+
+4. **No untyped function parameters** — All function parameters must have explicit type annotations:
+   - ❌ `function foo(bar) {}`
+   - ✅ `function foo(bar: string) {}`
+
+5. **No unjustified `any`** — Every use of `any` must include a comment explaining why:
+   - ❌ `const data: any = getData()`
+   - ✅ `const data: any = getData() // TODO(ts-migration): third-party lib lacks types`
+
+6. **Exported functions must have return types** — All exported functions must declare their return type explicitly:
+   - ❌ `export const getUser = async (id: string) => {`
+   - ✅ `export const getUser = async (id: string): Promise<IUser | null> => {`
+
+## Exceptions
+
+- Root config files (`jest.config.js`, `.eslintrc.json`, `ecosystem.config.json`) are excluded — they live outside `src/`.
+- `bin/createNodejsApp.js` is excluded from migration.
+- Files actively being converted in a batch may temporarily have mixed patterns during the conversion process.
