@@ -8,6 +8,64 @@
   "parserOptions": {
     "ecmaVersion": 2018
   },
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "project": ["./tsconfig.json", "./tsconfig.test.json"]
+      },
+      "node": {
+        "extensions": [".js", ".ts"]
+      }
+    }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+      },
+      "plugins": ["@typescript-eslint"],
+      "extends": [
+        "airbnb-base",
+        "plugin:import/typescript",
+        "plugin:jest/recommended",
+        "plugin:security/recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:prettier/recommended"
+      ],
+      "rules": {
+        "import/extensions": ["error", "ignorePackages", { "js": "never", "ts": "never" }],
+        "import/prefer-default-export": "off",
+        "import/no-extraneous-dependencies": [
+          "error",
+          {
+            "devDependencies": ["**/*.test.ts", "tests/**/*.ts", "**/*.d.ts", "jest.config.js"]
+          }
+        ],
+        "no-use-before-define": "off",
+        "no-shadow": "off",
+        "no-unused-vars": "off",
+        "no-param-reassign": "off",
+        "no-underscore-dangle": "off",
+        "jest/expect-expect": "off",
+        "security/detect-object-injection": "off",
+        "security/detect-non-literal-fs-filename": "off",
+        "@typescript-eslint/no-use-before-define": "error",
+        "@typescript-eslint/no-shadow": "error",
+        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-empty-interface": "off"
+      }
+    },
+    {
+      "files": ["**/*.d.ts"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off"
+      }
+    }
+  ],
   "rules": {
     "no-console": "error",
     "func-names": "off",
