@@ -5,9 +5,9 @@ import ApiError = require('../utils/ApiError');
 import { roleRights } from '../config/roles';
 import type { IUser } from '../models/user.model';
 
-declare global {
-  namespace Express {
-    interface User extends IUser {}
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: IUser;
   }
 }
 

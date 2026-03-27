@@ -9,12 +9,7 @@ type ErrorWithStatusCode = Error & {
   statusCode?: number;
 };
 
-const errorConverter = (
-  err: ErrorWithStatusCode | ApiError,
-  _req: Request,
-  _res: Response,
-  next: NextFunction
-): void => {
+const errorConverter = (err: ErrorWithStatusCode | ApiError, _req: Request, _res: Response, next: NextFunction): void => {
   let error: ErrorWithStatusCode | ApiError = err;
   if (!(error instanceof ApiError)) {
     const statusCode =
@@ -25,7 +20,7 @@ const errorConverter = (
   next(error);
 };
 
-const errorHandler = (err: ApiError, _req: Request, res: Response, _next: NextFunction): void => {
+const errorHandler = (err: ApiError, _req: Request, res: Response): void => {
   let { statusCode, message } = err;
   if (config.env === 'production' && !err.isOperational) {
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;
