@@ -31,8 +31,8 @@ const toJSON = (schema: Schema<any>): void => {
     transform(doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) {
       Object.keys(schema.paths).forEach((path) => {
         // TODO(ts-migration): Mongoose SchemaType does not expose options in its public typedef
-        const schemaPath = schema.paths[path] as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-        if (schemaPath?.options?.private) {
+        const schemaPath = schema.paths[path] as unknown as { options: { private?: boolean } };
+        if (schemaPath.options.private) {
           deleteAtPath(ret, path.split('.'), 0);
         }
       });
