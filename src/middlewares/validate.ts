@@ -1,8 +1,8 @@
 import Joi, { ObjectSchema } from 'joi';
 import httpStatus from 'http-status';
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import pick = require('../utils/pick');
-import ApiError = require('../utils/ApiError');
+import pick from '../utils/pick';
+import ApiError from '../utils/ApiError';
 
 interface ValidationSchema {
   params?: ObjectSchema;

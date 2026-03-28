@@ -1,7 +1,7 @@
 import passport from 'passport';
 import httpStatus from 'http-status';
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import ApiError = require('../utils/ApiError');
+import ApiError from '../utils/ApiError';
 import { roleRights } from '../config/roles';
 import type { IUser } from '../models/user.model';
 

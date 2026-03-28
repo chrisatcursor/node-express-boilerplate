@@ -1,4 +1,3 @@
-// @ts-expect-error express-rate-limit has no bundled typings in this dependency version
 import rateLimit from 'express-rate-limit';
 
 const authLimiter = rateLimit({
