@@ -81,3 +81,6 @@ const paginate = (schema: Schema<any>): void => {
 };
 
 export default paginate;
+
+module.exports = paginate;
+module.exports.default = paginate;

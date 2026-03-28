@@ -15,10 +15,7 @@ const createUser = async (userBody: NewUserBody): Promise<IUser> => {
   return User.create(userBody);
 };
 
-const queryUsers = async (
-  filter: Record<string, unknown>,
-  options: PaginateOptions
-): Promise<QueryResult> => {
+const queryUsers = async (filter: Record<string, unknown>, options: PaginateOptions): Promise<QueryResult> => {
   return User.paginate(filter, options);
 };
 
@@ -35,7 +32,9 @@ const updateUserById = async (userId: mongoose.Types.ObjectId | string, updateBo
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  if (updateBody.email && (await User.isEmailTaken(updateBody.email))) {
+  // Use the persisted user _id to avoid false positives when userId is string.
+  const excludeUserId = user._id as mongoose.Types.ObjectId;
+  if (updateBody.email && (await User.isEmailTaken(updateBody.email, excludeUserId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
   Object.assign(user, updateBody);

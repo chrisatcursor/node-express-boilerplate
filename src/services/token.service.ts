@@ -12,11 +12,6 @@ import * as userService from './user.service';
 
 type TokenType = (typeof tokenTypes)[keyof typeof tokenTypes];
 
-interface ParsedTokenPayload extends JwtPayload {
-  sub: string;
-  type: TokenType;
-}
-
 interface AuthToken {
   token: string;
   expires: Date;
@@ -27,17 +22,13 @@ interface AuthTokens {
   refresh: AuthToken;
 }
 
-const isParsedTokenPayload = (payload: string | JwtPayload): payload is ParsedTokenPayload => {
-  return typeof payload !== 'string' && typeof payload.sub === 'string' && typeof payload.type === 'string';
-};
-
 const generateToken = (
   userId: mongoose.Types.ObjectId | string,
   expires: Moment,
-  type: TokenType,
+  type?: TokenType,
   secret = config.jwt.secret
 ): string => {
-  const payload: ParsedTokenPayload = {
+  const payload = {
     sub: userId.toString(),
     iat: moment().unix(),
     exp: expires.unix(),
@@ -63,10 +54,7 @@ const saveToken = async (
 };
 
 const verifyToken = async (token: string, type: TokenType): Promise<IToken> => {
-  const payload = jwt.verify(token, config.jwt.secret);
-  if (!isParsedTokenPayload(payload)) {
-    throw new Error('Invalid token payload');
-  }
+  const payload = jwt.verify(token, config.jwt.secret) as JwtPayload;
   const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
   if (!tokenDoc) {
     throw new Error('Token not found');
@@ -112,12 +100,5 @@ const generateVerifyEmailToken = async (user: IUser): Promise<string> => {
   return verifyEmailToken;
 };
 
-export {
-  generateToken,
-  saveToken,
-  verifyToken,
-  generateAuthTokens,
-  generateResetPasswordToken,
-  generateVerifyEmailToken,
-};
+export { generateToken, saveToken, verifyToken, generateAuthTokens, generateResetPasswordToken, generateVerifyEmailToken };
 export type { AuthTokens, TokenType };
