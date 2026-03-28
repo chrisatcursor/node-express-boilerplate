@@ -2,6 +2,14 @@
 
 import { Schema, Document } from 'mongoose';
 
+type SchemaWithToJson = Schema<any> & {
+  options: {
+    toJSON?: {
+      transform?: (doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown;
+    };
+  };
+};
+
 const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: number): void => {
   if (index === path.length - 1) {
     delete obj[path[index] as string];
@@ -13,12 +21,13 @@ const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: numbe
 // TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
 const toJSON = (schema: Schema<any>): void => {
   // eslint-disable-line @typescript-eslint/no-explicit-any
+  const typedSchema = schema as SchemaWithToJson;
   let transform: ((doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown) | undefined;
-  if (schema.options.toJSON && schema.options.toJSON.transform) {
-    transform = schema.options.toJSON.transform as typeof transform;
+  if (typedSchema.options.toJSON && typedSchema.options.toJSON.transform) {
+    transform = typedSchema.options.toJSON.transform as typeof transform;
   }
 
-  schema.options.toJSON = Object.assign(schema.options.toJSON || {}, {
+  typedSchema.options.toJSON = Object.assign(typedSchema.options.toJSON || {}, {
     transform(doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) {
       Object.keys(schema.paths).forEach((path) => {
         // TODO(ts-migration): Mongoose SchemaType does not expose options in its public typedef

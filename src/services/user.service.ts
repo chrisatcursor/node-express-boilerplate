@@ -1,25 +1,28 @@
-import mongoose from 'mongoose';
 import httpStatus from 'http-status';
+import mongoose from 'mongoose';
 import { User } from '../models';
-import type { IUser, QueryResult, PaginateOptions } from '../models';
-import ApiError = require('../utils/ApiError');
+import type { PaginateOptions, QueryResult } from '../models/plugins';
+import type { IUser } from '../models/user.model';
+import ApiError from '../utils/ApiError';
 
-type CreateUserBody = Pick<IUser, 'name' | 'email' | 'password'> & Partial<Pick<IUser, 'role' | 'isEmailVerified'>>;
-type UpdateUserBody = Partial<Pick<IUser, 'name' | 'email' | 'password' | 'role' | 'isEmailVerified'>>;
+type NewUserBody = Pick<IUser, 'email' | 'password' | 'name'> & Partial<Pick<IUser, 'role'>>;
+type UpdateUserBody = Partial<Pick<IUser, 'email' | 'password' | 'name' | 'isEmailVerified'>>;
 
-const createUser = async (userBody: CreateUserBody): Promise<IUser> => {
+const createUser = async (userBody: NewUserBody): Promise<IUser> => {
   if (await User.isEmailTaken(userBody.email)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
   return User.create(userBody);
 };
 
-const queryUsers = async (filter: Record<string, unknown>, options: PaginateOptions): Promise<QueryResult> => {
-  const users = await User.paginate(filter, options);
-  return users;
+const queryUsers = async (
+  filter: Record<string, unknown>,
+  options: PaginateOptions
+): Promise<QueryResult> => {
+  return User.paginate(filter, options);
 };
 
-const getUserById = async (id: string | mongoose.Types.ObjectId): Promise<IUser | null> => {
+const getUserById = async (id: mongoose.Types.ObjectId | string): Promise<IUser | null> => {
   return User.findById(id);
 };
 
@@ -27,14 +30,12 @@ const getUserByEmail = async (email: string): Promise<IUser | null> => {
   return User.findOne({ email });
 };
 
-const updateUserById = async (userId: string | mongoose.Types.ObjectId, updateBody: UpdateUserBody): Promise<IUser> => {
+const updateUserById = async (userId: mongoose.Types.ObjectId | string, updateBody: UpdateUserBody): Promise<IUser> => {
   const user = await getUserById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  // TODO(ts-migration): IUserModel.isEmailTaken expects ObjectId, but service accepts string/ObjectId for API compatibility
-  const excludeUserId = userId as unknown as mongoose.Types.ObjectId;
-  if (updateBody.email && (await User.isEmailTaken(updateBody.email, excludeUserId))) {
+  if (updateBody.email && (await User.isEmailTaken(updateBody.email))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
   Object.assign(user, updateBody);
@@ -42,7 +43,7 @@ const updateUserById = async (userId: string | mongoose.Types.ObjectId, updateBo
   return user;
 };
 
-const deleteUserById = async (userId: string | mongoose.Types.ObjectId): Promise<IUser> => {
+const deleteUserById = async (userId: mongoose.Types.ObjectId | string): Promise<IUser> => {
   const user = await getUserById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
@@ -52,6 +53,3 @@ const deleteUserById = async (userId: string | mongoose.Types.ObjectId): Promise
 };
 
 export { createUser, queryUsers, getUserById, getUserByEmail, updateUserById, deleteUserById };
-
-export type NewUserBody = CreateUserBody;
-export type UserUpdateBody = UpdateUserBody;

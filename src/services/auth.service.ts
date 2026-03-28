@@ -1,22 +1,12 @@
 import httpStatus from 'http-status';
-import Token from '../models/token.model';
-import ApiError = require('../utils/ApiError');
-import { tokenTypes } from '../config/tokens';
 import * as tokenService from './token.service';
 import * as userService from './user.service';
+import type { AuthTokens } from './token.service';
+import Token from '../models/token.model';
 import type { IUser } from '../models/user.model';
+import ApiError from '../utils/ApiError';
+import { tokenTypes } from '../config/tokens';
 
-type AuthTokenResponse = {
-  access: { token: string; expires: Date };
-  refresh: { token: string; expires: Date };
-};
-
-/**
- * Login with username and password
- * @param {string} email
- * @param {string} password
- * @returns {Promise<User>}
- */
 const loginUserWithEmailAndPassword = async (email: string, password: string): Promise<IUser> => {
   const user = await userService.getUserByEmail(email);
   if (!user || !(await user.isPasswordMatch(password))) {
@@ -25,11 +15,6 @@ const loginUserWithEmailAndPassword = async (email: string, password: string): P
   return user;
 };
 
-/**
- * Logout
- * @param {string} refreshToken
- * @returns {Promise}
- */
 const logout = async (refreshToken: string): Promise<void> => {
   const refreshTokenDoc = await Token.findOne({
     token: refreshToken,
@@ -42,19 +27,12 @@ const logout = async (refreshToken: string): Promise<void> => {
   await refreshTokenDoc.remove();
 };
 
-/**
- * Refresh auth tokens
- * @param {string} refreshToken
- * @returns {Promise<Object>}
- */
-const refreshAuth = async (
-  refreshToken: string
-): Promise<AuthTokenResponse> => {
+const refreshAuth = async (refreshToken: string): Promise<AuthTokens> => {
   try {
     const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH);
     const user = await userService.getUserById(refreshTokenDoc.user);
     if (!user) {
-      throw new Error();
+      throw new Error('User not found');
     }
     await refreshTokenDoc.remove();
     return tokenService.generateAuthTokens(user);
@@ -63,18 +41,12 @@ const refreshAuth = async (
   }
 };
 
-/**
- * Reset password
- * @param {string} resetPasswordToken
- * @param {string} newPassword
- * @returns {Promise}
- */
 const resetPassword = async (resetPasswordToken: string, newPassword: string): Promise<void> => {
   try {
     const resetPasswordTokenDoc = await tokenService.verifyToken(resetPasswordToken, tokenTypes.RESET_PASSWORD);
     const user = await userService.getUserById(resetPasswordTokenDoc.user);
     if (!user) {
-      throw new Error();
+      throw new Error('User not found');
     }
     await userService.updateUserById(user.id, { password: newPassword });
     await Token.deleteMany({ user: user.id, type: tokenTypes.RESET_PASSWORD });
@@ -83,17 +55,12 @@ const resetPassword = async (resetPasswordToken: string, newPassword: string): P
   }
 };
 
-/**
- * Verify email
- * @param {string} verifyEmailToken
- * @returns {Promise}
- */
 const verifyEmail = async (verifyEmailToken: string): Promise<void> => {
   try {
     const verifyEmailTokenDoc = await tokenService.verifyToken(verifyEmailToken, tokenTypes.VERIFY_EMAIL);
     const user = await userService.getUserById(verifyEmailTokenDoc.user);
     if (!user) {
-      throw new Error();
+      throw new Error('User not found');
     }
     await Token.deleteMany({ user: user.id, type: tokenTypes.VERIFY_EMAIL });
     await userService.updateUserById(user.id, { isEmailVerified: true });

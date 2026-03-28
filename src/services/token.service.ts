@@ -1,44 +1,44 @@
-import jwt from 'jsonwebtoken';
-import moment, { Moment } from 'moment';
 import httpStatus from 'http-status';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import moment, { Moment } from 'moment';
 import mongoose from 'mongoose';
-import config = require('../config/config');
-import * as userService from './user.service';
-import { Token } from '../models';
-import type { IToken, IUser } from '../models';
-import ApiError = require('../utils/ApiError');
+import config from '../config/config';
 import { tokenTypes } from '../config/tokens';
+import { Token } from '../models';
+import type { IToken } from '../models/token.model';
+import type { IUser } from '../models/user.model';
+import ApiError from '../utils/ApiError';
+import * as userService from './user.service';
 
-interface TokenPayload {
+type TokenType = (typeof tokenTypes)[keyof typeof tokenTypes];
+
+interface ParsedTokenPayload extends JwtPayload {
   sub: string;
-  iat: number;
-  exp: number;
-  type: string;
+  type: TokenType;
+}
+
+interface AuthToken {
+  token: string;
+  expires: Date;
 }
 
 interface AuthTokens {
-  access: {
-    token: string;
-    expires: Date;
-  };
-  refresh: {
-    token: string;
-    expires: Date;
-  };
+  access: AuthToken;
+  refresh: AuthToken;
 }
 
-const isTokenPayload = (payload: string | jwt.JwtPayload): payload is TokenPayload => {
+const isParsedTokenPayload = (payload: string | JwtPayload): payload is ParsedTokenPayload => {
   return typeof payload !== 'string' && typeof payload.sub === 'string' && typeof payload.type === 'string';
 };
 
 const generateToken = (
   userId: mongoose.Types.ObjectId | string,
   expires: Moment,
-  type: string,
+  type: TokenType,
   secret = config.jwt.secret
 ): string => {
-  const payload: TokenPayload = {
-    sub: String(userId),
+  const payload: ParsedTokenPayload = {
+    sub: userId.toString(),
     iat: moment().unix(),
     exp: expires.unix(),
     type,
@@ -50,22 +50,21 @@ const saveToken = async (
   token: string,
   userId: mongoose.Types.ObjectId | string,
   expires: Moment,
-  type: string,
+  type: TokenType,
   blacklisted = false
 ): Promise<IToken> => {
-  const tokenDoc = await Token.create({
+  return Token.create({
     token,
     user: userId,
     expires: expires.toDate(),
     type,
     blacklisted,
   });
-  return tokenDoc;
 };
 
-const verifyToken = async (token: string, type: string): Promise<IToken> => {
+const verifyToken = async (token: string, type: TokenType): Promise<IToken> => {
   const payload = jwt.verify(token, config.jwt.secret);
-  if (!isTokenPayload(payload)) {
+  if (!isParsedTokenPayload(payload)) {
     throw new Error('Invalid token payload');
   }
   const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
@@ -113,4 +112,12 @@ const generateVerifyEmailToken = async (user: IUser): Promise<string> => {
   return verifyEmailToken;
 };
 
-export { generateToken, saveToken, verifyToken, generateAuthTokens, generateResetPasswordToken, generateVerifyEmailToken };
+export {
+  generateToken,
+  saveToken,
+  verifyToken,
+  generateAuthTokens,
+  generateResetPasswordToken,
+  generateVerifyEmailToken,
+};
+export type { AuthTokens, TokenType };
