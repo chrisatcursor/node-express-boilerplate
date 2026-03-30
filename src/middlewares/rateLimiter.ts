@@ -1,4 +1,3 @@
-// @ts-expect-error express-rate-limit v5 has no bundled type declarations in this stack
 import rateLimit from 'express-rate-limit';
 
 const authLimiter = rateLimit({
@@ -7,5 +6,5 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 });
 
-// eslint-disable-next-line import/prefer-default-export
+export default authLimiter;
 export { authLimiter };
