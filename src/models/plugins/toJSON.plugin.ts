@@ -10,33 +10,20 @@ const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: numbe
   deleteAtPath(obj[path[index] as string] as Record<string, unknown>, path, index + 1);
 };
 
-type SchemaWithOptions = Schema & {
-  // TODO(ts-migration): Mongoose schema options typing is too narrow for plugin mutation in v5 typings
-  options: {
-    toJSON?: {
-      transform?: (doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown;
-    };
-  };
-};
-
-// TODO(ts-migration): Schema type parameter kept broad for plugin compatibility with typed schemas
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
 const toJSON = (schema: Schema<any>): void => {
-  type SchemaWithAnyPath = SchemaWithOptions & {
-    // TODO(ts-migration): Mongoose SchemaType options are not fully typed in current defs
-    paths: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-  };
-  const schemaWithAnyPath = schema as SchemaWithAnyPath;
-  const schemaWithOptions = schema as SchemaWithOptions;
+  // eslint-disable-line @typescript-eslint/no-explicit-any
   let transform: ((doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown) | undefined;
-  if (schemaWithOptions.options.toJSON && schemaWithOptions.options.toJSON.transform) {
-    transform = schemaWithOptions.options.toJSON.transform;
+  if (schema.options.toJSON && schema.options.toJSON.transform) {
+    transform = schema.options.toJSON.transform as typeof transform;
   }
 
-  schemaWithOptions.options.toJSON = Object.assign(schemaWithOptions.options.toJSON || {}, {
+  schema.options.toJSON = Object.assign(schema.options.toJSON || {}, {
     transform(doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) {
-      Object.keys(schemaWithAnyPath.paths).forEach((path) => {
-        if (schemaWithAnyPath.paths[path]?.options?.private) {
+      Object.keys(schema.paths).forEach((path) => {
+        // TODO(ts-migration): Mongoose SchemaType does not expose options in its public typedef
+        const schemaPath = schema.paths[path] as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (schemaPath?.options?.private) {
           deleteAtPath(ret, path.split('.'), 0);
         }
       });
@@ -49,7 +36,6 @@ const toJSON = (schema: Schema<any>): void => {
       if (transform) {
         return transform(doc, ret, options);
       }
-      return undefined;
     },
   });
 };
