@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 
-import { Schema, Document, Model } from 'mongoose';
+import { Document, Model } from 'mongoose';
 
 export interface PaginateOptions {
   sortBy?: string;
@@ -21,9 +21,11 @@ export interface PaginateModel<T extends Document> extends Model<T> {
   paginate(filter: Record<string, unknown>, options: PaginateOptions): Promise<QueryResult>;
 }
 
-// TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
-const paginate = (schema: Schema<any>): void => {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
+type PopulateConfig = string | { path: string; populate: PopulateConfig };
+
+// TODO(ts-migration): Mongoose plugin generic constraints are too strict for shared plugin reuse across typed schemas
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const paginate = (schema: any): void => {
   // TODO(ts-migration): Mongoose statics type does not include custom methods
   // eslint-disable-next-line dot-notation
   schema.statics['paginate'] = async function (
@@ -56,7 +58,7 @@ const paginate = (schema: Schema<any>): void => {
           populateOption
             .split('.')
             .reverse()
-            .reduce((a: string | object, b: string) => ({ path: b, populate: a }))
+            .reduce<PopulateConfig>((a, b) => ({ path: b, populate: a }), '')
         );
       });
     }
@@ -80,7 +82,5 @@ const paginate = (schema: Schema<any>): void => {
 
 export default paginate;
 
-// @ts-expect-error: CJS compat — tests require() this file directly and expect a function
 module.exports = paginate;
-// @ts-expect-error: preserve .default for ESM-style barrel re-exports
 module.exports.default = paginate;
