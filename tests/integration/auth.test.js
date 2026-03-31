@@ -165,6 +165,35 @@ describe('Auth routes', () => {
     });
   });
 
+  describe('POST /v1/auth/logout-all', () => {
+    test('should return 204 and remove all refresh tokens for authenticated user', async () => {
+      await insertUsers([userOne]);
+      const expires = moment().add(config.jwt.refreshExpirationDays, 'days');
+      const refreshTokenOne = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
+      const refreshTokenTwo = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
+      const resetPasswordToken = tokenService.generateToken(userOne._id, expires, tokenTypes.RESET_PASSWORD);
+      await tokenService.saveToken(refreshTokenOne, userOne._id, expires, tokenTypes.REFRESH);
+      await tokenService.saveToken(refreshTokenTwo, userOne._id, expires, tokenTypes.REFRESH);
+      await tokenService.saveToken(resetPasswordToken, userOne._id, expires, tokenTypes.RESET_PASSWORD);
+
+      await request(app)
+        .post('/v1/auth/logout-all')
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .expect(httpStatus.NO_CONTENT);
+
+      const dbRefreshTokenCount = await Token.countDocuments({ user: userOne._id, type: tokenTypes.REFRESH });
+      const dbResetPasswordTokenCount = await Token.countDocuments({ user: userOne._id, type: tokenTypes.RESET_PASSWORD });
+      expect(dbRefreshTokenCount).toBe(0);
+      expect(dbResetPasswordTokenCount).toBe(1);
+    });
+
+    test('should return 401 error if access token is missing', async () => {
+      await insertUsers([userOne]);
+
+      await request(app).post('/v1/auth/logout-all').send().expect(httpStatus.UNAUTHORIZED);
+    });
+  });
+
   describe('POST /v1/auth/refresh-tokens', () => {
     test('should return 200 and new auth tokens if refresh token is valid', async () => {
       await insertUsers([userOne]);

@@ -33,6 +33,15 @@ const logout = async (refreshToken) => {
 };
 
 /**
+ * Logout from all sessions
+ * @param {ObjectId} userId
+ * @returns {Promise}
+ */
+const logoutAllSessions = async (userId) => {
+  await Token.deleteMany({ user: userId, type: tokenTypes.REFRESH });
+};
+
+/**
  * Refresh auth tokens
  * @param {string} refreshToken
  * @returns {Promise<Object>}
@@ -93,6 +102,7 @@ const verifyEmail = async (verifyEmailToken) => {
 module.exports = {
   loginUserWithEmailAndPassword,
   logout,
+  logoutAllSessions,
   refreshAuth,
   resetPassword,
   verifyEmail,

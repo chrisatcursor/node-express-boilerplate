@@ -9,6 +9,7 @@ const router = express.Router();
 router.post('/register', validate(authValidation.register), authController.register);
 router.post('/login', validate(authValidation.login), authController.login);
 router.post('/logout', validate(authValidation.logout), authController.logout);
+router.post('/logout-all', auth(), authController.logoutAll);
 router.post('/refresh-tokens', validate(authValidation.refreshTokens), authController.refreshTokens);
 router.post('/forgot-password', validate(authValidation.forgotPassword), authController.forgotPassword);
 router.post('/reset-password', validate(authValidation.resetPassword), authController.resetPassword);
@@ -144,6 +145,22 @@ module.exports = router;
  *         description: No content
  *       "404":
  *         $ref: '#/components/responses/NotFound'
+ */
+
+/**
+ * @swagger
+ * /auth/logout-all:
+ *   post:
+ *     summary: Logout from all sessions
+ *     description: Invalidates all refresh tokens for the authenticated user.
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "204":
+ *         description: No content
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
  */
 
 /**
