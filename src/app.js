@@ -13,8 +13,10 @@ const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+const { version } = require('../package.json');
 
 const app = express();
+const processStartedAt = Date.now();
 
 if (config.env !== 'test') {
   app.use(morgan.successHandler);
@@ -52,6 +54,16 @@ if (config.env === 'production') {
 
 // v1 api routes
 app.use('/v1', routes);
+
+// lightweight process health endpoint for probes and UI status
+app.get('/api/health', (_req, res) => {
+  const uptimeSeconds = Math.floor((Date.now() - processStartedAt) / 1000);
+  res.status(httpStatus.OK).json({
+    ok: true,
+    version,
+    uptimeSeconds,
+  });
+});
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
