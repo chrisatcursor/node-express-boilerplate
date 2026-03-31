@@ -1,30 +1,27 @@
 import Joi from 'joi';
 import httpStatus from 'http-status';
-import { NextFunction, Request, RequestHandler, Response } from 'express';
-import pick from '../utils/pick';
-import ApiError from '../utils/ApiError';
+import { NextFunction, Request, Response } from 'express';
+import pick = require('../utils/pick');
+import ApiError = require('../utils/ApiError');
 
-type ValidationSchema = {
-  params?: Joi.Schema;
-  query?: Joi.Schema;
-  body?: Joi.Schema;
-};
+type ValidationSchema = Partial<Record<'params' | 'query' | 'body', Joi.ObjectSchema>>;
 
 const validate =
-  (schema: ValidationSchema): RequestHandler =>
+  (schema: ValidationSchema) =>
   (req: Request, _res: Response, next: NextFunction): void => {
     const validSchema = pick(schema, ['params', 'query', 'body']);
-    const object = pick(req, Object.keys(validSchema) as (keyof Request)[]);
+    const object = pick(req, Object.keys(validSchema) as Array<keyof Request>);
     const { value, error } = Joi.compile(validSchema)
       .prefs({ errors: { label: 'key' }, abortEarly: false })
       .validate(object);
 
     if (error) {
       const errorMessage = error.details.map((details) => details.message).join(', ');
-      return next(new ApiError(httpStatus.BAD_REQUEST, errorMessage));
+      next(new ApiError(httpStatus.BAD_REQUEST, errorMessage));
+      return;
     }
     Object.assign(req, value);
-    return next();
+    next();
   };
 
 export = validate;
