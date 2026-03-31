@@ -13,7 +13,6 @@ declare module 'express-serve-static-core' {
 
 type VerifyResolve = () => void;
 type VerifyReject = (reason?: ApiError) => void;
-
 const verifyCallback =
   (req: Request, resolve: VerifyResolve, reject: VerifyReject, requiredRights: string[]) =>
   async (err: Error | null, user: IUser | false, info: unknown): Promise<void> => {
