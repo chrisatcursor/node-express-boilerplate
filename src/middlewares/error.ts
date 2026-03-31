@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import httpStatus from 'http-status';
-import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import config = require('../config/config');
 import logger = require('../config/logger');
 import ApiError = require('../utils/ApiError');
@@ -24,7 +24,8 @@ const errorConverter = (err: unknown, _req: Request, _res: Response, next: NextF
   next(error);
 };
 
-const errorHandler: ErrorRequestHandler = (err: ApiError, _req: Request, res: Response): void => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const errorHandler = (err: ApiError, _req: Request, res: Response, _next: NextFunction): void => {
   let { statusCode, message } = err;
   if (config.env === 'production' && !err.isOperational) {
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;
