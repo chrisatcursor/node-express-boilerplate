@@ -18,7 +18,6 @@ const errorConverter = (err: ErrorWithStatus | ApiError, _req: Request, _res: Re
     const message = error.message || (httpStatus[statusCode] as string);
     error = new ApiError(statusCode, message, false, err.stack);
   }
-
   next(error);
 };
 

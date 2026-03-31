@@ -13,7 +13,6 @@ const verifyCallback =
     if (err || info || !user) {
       return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
     }
-
     req.user = user;
 
     if (requiredRights.length) {
