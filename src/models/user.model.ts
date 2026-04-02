@@ -99,5 +99,6 @@ const User = mongoose.model<IUser, IUserModel>('User', userSchema);
 
 export default User;
 
+// Preserve CJS interop while tests still use require() for this model.
 module.exports = User;
 module.exports.default = User;
