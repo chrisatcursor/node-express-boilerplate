@@ -31,7 +31,7 @@ const toJSON = <T extends Document>(schema: Schema<T>): void => {
       Object.keys(schemaWithOptions.paths).forEach((path) => {
         // TODO(ts-migration): Mongoose SchemaType does not expose options in its public typedef
         const schemaPath = schemaWithOptions.paths[path] as { options?: { private?: boolean } };
-        if (schemaPath?.options?.private) {
+        if (schemaPath.options && schemaPath.options.private) {
           deleteAtPath(ret, path.split('.'), 0);
         }
       });
