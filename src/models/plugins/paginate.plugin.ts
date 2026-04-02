@@ -56,7 +56,11 @@ const paginate = (schema: Schema<any>): void => {
           populateOption
             .split('.')
             .reverse()
-            .reduce((a: string | object, b: string) => ({ path: b, populate: a }))
+            // TODO(ts-migration): nested populate object shape is hard to express with Mongoose v5 typings
+            .reduce<object | string>(
+              (accumulator, key) => ({ path: key, populate: accumulator }),
+              '' as string | object
+            )
         );
       });
     }
@@ -79,8 +83,3 @@ const paginate = (schema: Schema<any>): void => {
 };
 
 export default paginate;
-
-// @ts-expect-error: CJS compat — tests require() this file directly and expect a function
-module.exports = paginate;
-// @ts-expect-error: preserve .default for ESM-style barrel re-exports
-module.exports.default = paginate;

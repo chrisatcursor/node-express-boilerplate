@@ -10,19 +10,27 @@ const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: numbe
   deleteAtPath(obj[path[index] as string] as Record<string, unknown>, path, index + 1);
 };
 
-// TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
-const toJSON = (schema: Schema<any>): void => {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
+type SchemaWithOptions = Schema & {
+  options: {
+    toJSON?: {
+      transform?: (doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown;
+    };
+  };
+  paths: Record<string, unknown>;
+};
+
+const toJSON = <T extends Document>(schema: Schema<T>): void => {
+  const schemaWithOptions = schema as unknown as SchemaWithOptions;
   let transform: ((doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown) | undefined;
-  if (schema.options.toJSON && schema.options.toJSON.transform) {
-    transform = schema.options.toJSON.transform as typeof transform;
+  if (schemaWithOptions.options.toJSON && schemaWithOptions.options.toJSON.transform) {
+    transform = schemaWithOptions.options.toJSON.transform as typeof transform;
   }
 
-  schema.options.toJSON = Object.assign(schema.options.toJSON || {}, {
+  schemaWithOptions.options.toJSON = Object.assign(schemaWithOptions.options.toJSON || {}, {
     transform(doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) {
-      Object.keys(schema.paths).forEach((path) => {
+      Object.keys(schemaWithOptions.paths).forEach((path) => {
         // TODO(ts-migration): Mongoose SchemaType does not expose options in its public typedef
-        const schemaPath = schema.paths[path] as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const schemaPath = schemaWithOptions.paths[path] as { options?: { private?: boolean } };
         if (schemaPath?.options?.private) {
           deleteAtPath(ret, path.split('.'), 0);
         }
