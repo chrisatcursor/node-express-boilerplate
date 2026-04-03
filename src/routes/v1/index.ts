@@ -41,4 +41,4 @@ if (config.env === 'development') {
   });
 }
 
-export default router;
+export = router;
