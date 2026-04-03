@@ -1,7 +1,10 @@
 import express, { Router } from 'express';
+// @ts-expect-error auth middleware is still JS in earlier migration batches
 import auth from '../../middlewares/auth';
+// @ts-expect-error validate middleware is still JS in earlier migration batches
 import validate from '../../middlewares/validate';
 import * as userValidation from '../../validations/user.validation';
+// @ts-expect-error user controller is still JS in earlier migration batches
 import * as userController from '../../controllers/user.controller';
 
 const router: Router = express.Router();
