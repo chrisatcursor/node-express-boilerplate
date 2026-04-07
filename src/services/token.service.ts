@@ -1,35 +1,39 @@
-import httpStatus from 'http-status';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import moment, { Moment } from 'moment';
+import moment from 'moment';
 import mongoose from 'mongoose';
-import config from '../config/config';
+import httpStatus from 'http-status';
+import config = require('../config/config');
 import { tokenTypes } from '../config/tokens';
 import { Token } from '../models';
-import type { IToken } from '../models/token.model';
-import type { IUser } from '../models/user.model';
-import ApiError from '../utils/ApiError';
+import type { IToken, IUser } from '../models';
+import ApiError = require('../utils/ApiError');
 import * as userService from './user.service';
 
 type TokenType = (typeof tokenTypes)[keyof typeof tokenTypes];
 
-interface AuthToken {
+interface TokenPayload extends JwtPayload {
+  sub: string;
+  type: TokenType;
+}
+
+interface TokenPair {
   token: string;
   expires: Date;
 }
 
 interface AuthTokens {
-  access: AuthToken;
-  refresh: AuthToken;
+  access: TokenPair;
+  refresh: TokenPair;
 }
 
 const generateToken = (
   userId: mongoose.Types.ObjectId | string,
-  expires: Moment,
-  type?: TokenType,
-  secret = config.jwt.secret
+  expires: moment.Moment,
+  type: TokenType,
+  secret: string = config.jwt.secret
 ): string => {
-  const payload = {
-    sub: userId.toString(),
+  const payload: TokenPayload = {
+    sub: String(userId),
     iat: moment().unix(),
     exp: expires.unix(),
     type,
@@ -40,21 +44,25 @@ const generateToken = (
 const saveToken = async (
   token: string,
   userId: mongoose.Types.ObjectId | string,
-  expires: Moment,
+  expires: moment.Moment,
   type: TokenType,
   blacklisted = false
 ): Promise<IToken> => {
-  return Token.create({
+  const tokenDoc = await Token.create({
     token,
     user: userId,
     expires: expires.toDate(),
     type,
     blacklisted,
   });
+  return tokenDoc;
 };
 
 const verifyToken = async (token: string, type: TokenType): Promise<IToken> => {
-  const payload = jwt.verify(token, config.jwt.secret) as JwtPayload;
+  const payload = jwt.verify(token, config.jwt.secret);
+  if (typeof payload === 'string' || !payload.sub) {
+    throw new Error('Invalid token payload');
+  }
   const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
   if (!tokenDoc) {
     throw new Error('Token not found');
@@ -101,4 +109,4 @@ const generateVerifyEmailToken = async (user: IUser): Promise<string> => {
 };
 
 export { generateToken, saveToken, verifyToken, generateAuthTokens, generateResetPasswordToken, generateVerifyEmailToken };
-export type { AuthTokens, TokenType };
+export type { AuthTokens };

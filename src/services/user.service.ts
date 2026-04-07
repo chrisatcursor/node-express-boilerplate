@@ -1,12 +1,11 @@
-import httpStatus from 'http-status';
 import mongoose from 'mongoose';
+import httpStatus from 'http-status';
 import { User } from '../models';
-import type { PaginateOptions, QueryResult } from '../models/plugins';
-import type { IUser } from '../models/user.model';
-import ApiError from '../utils/ApiError';
+import type { IUser, QueryResult, PaginateOptions } from '../models';
+import ApiError = require('../utils/ApiError');
 
-type NewUserBody = Pick<IUser, 'email' | 'password' | 'name'> & Partial<Pick<IUser, 'role'>>;
-type UpdateUserBody = Partial<Pick<IUser, 'email' | 'password' | 'name' | 'isEmailVerified'>>;
+type NewUserBody = Pick<IUser, 'name' | 'email' | 'password'> & Partial<Pick<IUser, 'role' | 'isEmailVerified'>>;
+type UpdateUserBody = Partial<Pick<IUser, 'name' | 'email' | 'password' | 'role' | 'isEmailVerified'>>;
 
 const createUser = async (userBody: NewUserBody): Promise<IUser> => {
   if (await User.isEmailTaken(userBody.email)) {
@@ -16,10 +15,11 @@ const createUser = async (userBody: NewUserBody): Promise<IUser> => {
 };
 
 const queryUsers = async (filter: Record<string, unknown>, options: PaginateOptions): Promise<QueryResult> => {
-  return User.paginate(filter, options);
+  const users = await User.paginate(filter, options);
+  return users;
 };
 
-const getUserById = async (id: mongoose.Types.ObjectId | string): Promise<IUser | null> => {
+const getUserById = async (id: string | mongoose.Types.ObjectId): Promise<IUser | null> => {
   return User.findById(id);
 };
 
@@ -27,14 +27,12 @@ const getUserByEmail = async (email: string): Promise<IUser | null> => {
   return User.findOne({ email });
 };
 
-const updateUserById = async (userId: mongoose.Types.ObjectId | string, updateBody: UpdateUserBody): Promise<IUser> => {
+const updateUserById = async (userId: string | mongoose.Types.ObjectId, updateBody: UpdateUserBody): Promise<IUser> => {
   const user = await getUserById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  // Use the persisted user _id to avoid false positives when userId is string.
-  const excludeUserId = user._id as mongoose.Types.ObjectId;
-  if (updateBody.email && (await User.isEmailTaken(updateBody.email, excludeUserId))) {
+  if (updateBody.email && (await User.isEmailTaken(updateBody.email, user._id as mongoose.Types.ObjectId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
   Object.assign(user, updateBody);
@@ -42,7 +40,7 @@ const updateUserById = async (userId: mongoose.Types.ObjectId | string, updateBo
   return user;
 };
 
-const deleteUserById = async (userId: mongoose.Types.ObjectId | string): Promise<IUser> => {
+const deleteUserById = async (userId: string | mongoose.Types.ObjectId): Promise<IUser> => {
   const user = await getUserById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
