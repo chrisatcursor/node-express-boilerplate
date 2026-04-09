@@ -59,10 +59,7 @@ const saveToken = async (
 };
 
 const verifyToken = async (token: string, type: TokenType): Promise<IToken> => {
-  const payload = jwt.verify(token, config.jwt.secret);
-  if (typeof payload === 'string' || !payload.sub) {
-    throw new Error('Invalid token payload');
-  }
+  const payload = jwt.verify(token, config.jwt.secret) as JwtPayload & { sub: string };
   const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
   if (!tokenDoc) {
     throw new Error('Token not found');

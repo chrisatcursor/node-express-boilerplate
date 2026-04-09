@@ -51,12 +51,14 @@ const paginate = (schema: Schema<any>): void => {
     let docsPromise: any = this.find(filter).sort(sort).skip(skip).limit(limit); // eslint-disable-line @typescript-eslint/no-explicit-any
 
     if (options.populate) {
+      type NestedPopulate = string | { path: string; populate: NestedPopulate };
       options.populate.split(',').forEach((populateOption: string) => {
         docsPromise = docsPromise.populate(
           populateOption
             .split('.')
             .reverse()
-            .reduce((a: string | object, b: string) => ({ path: b, populate: a }))
+            // TODO(ts-migration): nested populate shape is recursive and hard to encode precisely for legacy mongoose
+            .reduce<NestedPopulate>((a, b) => ({ path: b, populate: a }), '')
         );
       });
     }
@@ -80,7 +82,5 @@ const paginate = (schema: Schema<any>): void => {
 
 export default paginate;
 
-// @ts-expect-error: CJS compat — tests require() this file directly and expect a function
 module.exports = paginate;
-// @ts-expect-error: preserve .default for ESM-style barrel re-exports
 module.exports.default = paginate;
