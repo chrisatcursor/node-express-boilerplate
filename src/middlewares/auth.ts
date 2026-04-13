@@ -1,9 +1,15 @@
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 import passport from 'passport';
 import httpStatus from 'http-status';
-import { NextFunction, Request, RequestHandler, Response } from 'express';
 import ApiError from '../utils/ApiError';
 import { roleRights } from '../config/roles';
 import type { IUser } from '../models/user.model';
+
+declare global {
+  namespace Express {
+    interface User extends IUser {}
+  }
+}
 
 type VerifyResolve = () => void;
 type VerifyReject = (reason?: ApiError) => void;
@@ -12,15 +18,17 @@ const verifyCallback =
   (req: Request, resolve: VerifyResolve, reject: VerifyReject, requiredRights: string[]) =>
   async (err: Error | null, user: IUser | false, info: unknown): Promise<void> => {
     if (err || info || !user) {
-      return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
+      reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
+      return;
     }
     req.user = user;
 
     if (requiredRights.length) {
       const userRights = roleRights.get(user.role as string) as UserRights;
-      const hasRequiredRights = requiredRights.every((requiredRight) => userRights.includes(requiredRight));
+      const hasRequiredRights = requiredRights.every((requiredRight) => userRights?.includes(requiredRight));
       if (!hasRequiredRights && req.params.userId !== user.id) {
-        return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+        reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+        return;
       }
     }
 

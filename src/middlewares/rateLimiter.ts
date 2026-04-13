@@ -1,11 +1,10 @@
-import rateLimit from 'express-rate-limit';
-import { RequestHandler } from 'express';
+// @ts-expect-error: express-rate-limit has no bundled types in this dependency set
+import rateLimit = require('express-rate-limit');
 
-const authLimiter: RequestHandler = rateLimit({
+const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   skipSuccessfulRequests: true,
 });
 
-export default authLimiter;
 export { authLimiter };
