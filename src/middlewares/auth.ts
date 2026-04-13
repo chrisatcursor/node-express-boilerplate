@@ -5,12 +5,6 @@ import ApiError from '../utils/ApiError';
 import { roleRights } from '../config/roles';
 import type { IUser } from '../models/user.model';
 
-declare global {
-  namespace Express {
-    interface User extends IUser {}
-  }
-}
-
 type VerifyResolve = () => void;
 type VerifyReject = (reason?: ApiError) => void;
 type UserRights = readonly string[];
@@ -25,7 +19,7 @@ const verifyCallback =
 
     if (requiredRights.length) {
       const userRights = roleRights.get(user.role as string) as UserRights;
-      const hasRequiredRights = requiredRights.every((requiredRight) => userRights?.includes(requiredRight));
+      const hasRequiredRights = requiredRights.every((requiredRight) => userRights.includes(requiredRight));
       if (!hasRequiredRights && req.params.userId !== user.id) {
         reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
         return;
