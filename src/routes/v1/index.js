@@ -2,9 +2,19 @@ const express = require('express');
 const authRoute = require('./auth.route');
 const userRoute = require('./user.route');
 const docsRoute = require('./docs.route');
+const auth = require('../../middlewares/auth');
 const config = require('../../config/config');
 
 const router = express.Router();
+const labsRoute = express.Router();
+
+labsRoute.get('/feature-flags', auth(), (req, res) => {
+  res.send({
+    title: 'Labs',
+    isNew: true,
+    featureFlags: config.featureFlags,
+  });
+});
 
 const defaultRoutes = [
   {
@@ -14,6 +24,10 @@ const defaultRoutes = [
   {
     path: '/users',
     route: userRoute,
+  },
+  {
+    path: '/labs',
+    route: labsRoute,
   },
 ];
 
