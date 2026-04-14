@@ -1,10 +1,12 @@
-const mongoose = require('mongoose');
-const httpStatus = require('http-status');
-const httpMocks = require('node-mocks-http');
-const { errorConverter, errorHandler } = require('../../../src/middlewares/error');
-const ApiError = require('../../../src/utils/ApiError');
-const config = require('../../../src/config/config');
-const logger = require('../../../src/config/logger');
+import mongoose from 'mongoose';
+import httpStatus from 'http-status';
+import httpMocks from 'node-mocks-http';
+import { errorConverter, errorHandler } from '../../../src/middlewares/error';
+import ApiError from '../../../src/utils/ApiError';
+import config from '../../../src/config/config';
+import logger from '../../../src/config/logger';
+
+const originalEnv = config.env;
 
 describe('Error middlewares', () => {
   describe('Error converter', () => {
@@ -19,7 +21,7 @@ describe('Error middlewares', () => {
 
     test('should convert an Error to ApiError and preserve its status and message', () => {
       const error = new Error('Any error');
-      error.statusCode = httpStatus.BAD_REQUEST;
+      (error as Error & { statusCode: number }).statusCode = httpStatus.BAD_REQUEST;
       const next = jest.fn();
 
       errorConverter(error, httpMocks.createRequest(), httpMocks.createResponse(), next);
@@ -27,7 +29,7 @@ describe('Error middlewares', () => {
       expect(next).toHaveBeenCalledWith(expect.any(ApiError));
       expect(next).toHaveBeenCalledWith(
         expect.objectContaining({
-          statusCode: error.statusCode,
+          statusCode: (error as Error & { statusCode: number }).statusCode,
           message: error.message,
           isOperational: false,
         })
@@ -52,7 +54,7 @@ describe('Error middlewares', () => {
 
     test('should convert an Error without message to ApiError with default message of that http status', () => {
       const error = new Error();
-      error.statusCode = httpStatus.BAD_REQUEST;
+      (error as Error & { statusCode: number }).statusCode = httpStatus.BAD_REQUEST;
       const next = jest.fn();
 
       errorConverter(error, httpMocks.createRequest(), httpMocks.createResponse(), next);
@@ -60,8 +62,8 @@ describe('Error middlewares', () => {
       expect(next).toHaveBeenCalledWith(expect.any(ApiError));
       expect(next).toHaveBeenCalledWith(
         expect.objectContaining({
-          statusCode: error.statusCode,
-          message: httpStatus[error.statusCode],
+          statusCode: (error as Error & { statusCode: number }).statusCode,
+          message: httpStatus[(error as Error & { statusCode: number }).statusCode as keyof typeof httpStatus],
           isOperational: false,
         })
       );
@@ -102,7 +104,7 @@ describe('Error middlewares', () => {
 
   describe('Error handler', () => {
     beforeEach(() => {
-      jest.spyOn(logger, 'error').mockImplementation(() => {});
+      jest.spyOn(logger, 'error').mockImplementation(() => logger);
     });
 
     test('should send proper error response and put the error message in res.locals', () => {
@@ -127,7 +129,7 @@ describe('Error middlewares', () => {
       expect(sendSpy).toHaveBeenCalledWith(
         expect.objectContaining({ code: error.statusCode, message: error.message, stack: error.stack })
       );
-      config.env = process.env.NODE_ENV;
+      config.env = originalEnv;
     });
 
     test('should send internal server error status and message if in production mode and error is not operational', () => {
@@ -145,7 +147,7 @@ describe('Error middlewares', () => {
         })
       );
       expect(res.locals.errorMessage).toBe(error.message);
-      config.env = process.env.NODE_ENV;
+      config.env = originalEnv;
     });
 
     test('should preserve original error status and message if in production mode and error is operational', () => {
@@ -162,7 +164,7 @@ describe('Error middlewares', () => {
           message: error.message,
         })
       );
-      config.env = process.env.NODE_ENV;
+      config.env = originalEnv;
     });
   });
 });

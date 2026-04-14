@@ -1,17 +1,22 @@
-const request = require('supertest');
-const faker = require('faker');
-const httpStatus = require('http-status');
-const app = require('../../src/app');
-const setupTestDB = require('../utils/setupTestDB');
-const { User } = require('../../src/models');
-const { userOne, userTwo, admin, insertUsers } = require('../fixtures/user.fixture');
-const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
+import request from 'supertest';
+import faker from 'faker';
+import httpStatus from 'http-status';
+import app from '../../src/app';
+import setupTestDB from '../utils/setupTestDB';
+import { User } from '../../src/models';
+import { userOne, userTwo, admin, insertUsers } from '../fixtures/user.fixture';
+import { userOneAccessToken, adminAccessToken } from '../fixtures/token.fixture';
 
 setupTestDB();
 
 describe('User routes', () => {
   describe('POST /v1/users', () => {
-    let newUser;
+    let newUser: {
+      name: string;
+      email: string;
+      password: string;
+      role: string;
+    };
 
     beforeEach(() => {
       newUser = {
@@ -42,6 +47,9 @@ describe('User routes', () => {
 
       const dbUser = await User.findById(res.body.id);
       expect(dbUser).toBeDefined();
+      if (!dbUser) {
+        throw new Error('Expected user to exist in database');
+      }
       expect(dbUser.password).not.toBe(newUser.password);
       expect(dbUser).toMatchObject({ name: newUser.name, email: newUser.email, role: newUser.role, isEmailVerified: false });
     });
@@ -59,6 +67,9 @@ describe('User routes', () => {
       expect(res.body.role).toBe('admin');
 
       const dbUser = await User.findById(res.body.id);
+      if (!dbUser) {
+        throw new Error('Expected user to exist in database');
+      }
       expect(dbUser.role).toBe('admin');
     });
 
@@ -159,7 +170,7 @@ describe('User routes', () => {
       });
       expect(res.body.results).toHaveLength(3);
       expect(res.body.results[0]).toEqual({
-        id: userOne._id.toHexString(),
+        id: userOne._id.toString(),
         name: userOne.name,
         email: userOne.email,
         role: userOne.role,
@@ -201,7 +212,7 @@ describe('User routes', () => {
         totalResults: 1,
       });
       expect(res.body.results).toHaveLength(1);
-      expect(res.body.results[0].id).toBe(userOne._id.toHexString());
+      expect(res.body.results[0].id).toBe(userOne._id.toString());
     });
 
     test('should correctly apply filter on role field', async () => {
@@ -222,8 +233,8 @@ describe('User routes', () => {
         totalResults: 2,
       });
       expect(res.body.results).toHaveLength(2);
-      expect(res.body.results[0].id).toBe(userOne._id.toHexString());
-      expect(res.body.results[1].id).toBe(userTwo._id.toHexString());
+      expect(res.body.results[0].id).toBe(userOne._id.toString());
+      expect(res.body.results[1].id).toBe(userTwo._id.toString());
     });
 
     test('should correctly sort the returned array if descending sort param is specified', async () => {
@@ -244,9 +255,9 @@ describe('User routes', () => {
         totalResults: 3,
       });
       expect(res.body.results).toHaveLength(3);
-      expect(res.body.results[0].id).toBe(userOne._id.toHexString());
-      expect(res.body.results[1].id).toBe(userTwo._id.toHexString());
-      expect(res.body.results[2].id).toBe(admin._id.toHexString());
+      expect(res.body.results[0].id).toBe(userOne._id.toString());
+      expect(res.body.results[1].id).toBe(userTwo._id.toString());
+      expect(res.body.results[2].id).toBe(admin._id.toString());
     });
 
     test('should correctly sort the returned array if ascending sort param is specified', async () => {
@@ -267,9 +278,9 @@ describe('User routes', () => {
         totalResults: 3,
       });
       expect(res.body.results).toHaveLength(3);
-      expect(res.body.results[0].id).toBe(admin._id.toHexString());
-      expect(res.body.results[1].id).toBe(userOne._id.toHexString());
-      expect(res.body.results[2].id).toBe(userTwo._id.toHexString());
+      expect(res.body.results[0].id).toBe(admin._id.toString());
+      expect(res.body.results[1].id).toBe(userOne._id.toString());
+      expect(res.body.results[2].id).toBe(userTwo._id.toString());
     });
 
     test('should correctly sort the returned array if multiple sorting criteria are specified', async () => {
@@ -302,7 +313,7 @@ describe('User routes', () => {
       });
 
       expectedOrder.forEach((user, index) => {
-        expect(res.body.results[index].id).toBe(user._id.toHexString());
+        expect(res.body.results[index].id).toBe(user._id.toString());
       });
     });
 
@@ -324,8 +335,8 @@ describe('User routes', () => {
         totalResults: 3,
       });
       expect(res.body.results).toHaveLength(2);
-      expect(res.body.results[0].id).toBe(userOne._id.toHexString());
-      expect(res.body.results[1].id).toBe(userTwo._id.toHexString());
+      expect(res.body.results[0].id).toBe(userOne._id.toString());
+      expect(res.body.results[1].id).toBe(userTwo._id.toString());
     });
 
     test('should return the correct page if page and limit params are specified', async () => {
@@ -346,7 +357,7 @@ describe('User routes', () => {
         totalResults: 3,
       });
       expect(res.body.results).toHaveLength(1);
-      expect(res.body.results[0].id).toBe(admin._id.toHexString());
+      expect(res.body.results[0].id).toBe(admin._id.toString());
     });
   });
 
@@ -362,7 +373,7 @@ describe('User routes', () => {
 
       expect(res.body).not.toHaveProperty('password');
       expect(res.body).toEqual({
-        id: userOne._id.toHexString(),
+        id: userOne._id.toString(),
         email: userOne.email,
         name: userOne.name,
         role: userOne.role,
@@ -495,7 +506,7 @@ describe('User routes', () => {
 
       expect(res.body).not.toHaveProperty('password');
       expect(res.body).toEqual({
-        id: userOne._id.toHexString(),
+        id: userOne._id.toString(),
         name: updateBody.name,
         email: updateBody.email,
         role: 'user',
@@ -504,6 +515,9 @@ describe('User routes', () => {
 
       const dbUser = await User.findById(userOne._id);
       expect(dbUser).toBeDefined();
+      if (!dbUser) {
+        throw new Error('Expected user to exist in database');
+      }
       expect(dbUser.password).not.toBe(updateBody.password);
       expect(dbUser).toMatchObject({ name: updateBody.name, email: updateBody.email, role: 'user' });
     });

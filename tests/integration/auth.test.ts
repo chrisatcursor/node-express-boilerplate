@@ -1,26 +1,30 @@
-const request = require('supertest');
-const faker = require('faker');
-const httpStatus = require('http-status');
-const httpMocks = require('node-mocks-http');
-const moment = require('moment');
-const bcrypt = require('bcryptjs');
-const app = require('../../src/app');
-const config = require('../../src/config/config');
-const auth = require('../../src/middlewares/auth');
-const { tokenService, emailService } = require('../../src/services');
-const ApiError = require('../../src/utils/ApiError');
-const setupTestDB = require('../utils/setupTestDB');
-const { User, Token } = require('../../src/models');
-const { roleRights } = require('../../src/config/roles');
-const { tokenTypes } = require('../../src/config/tokens');
-const { userOne, admin, insertUsers } = require('../fixtures/user.fixture');
-const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
+import request from 'supertest';
+import faker from 'faker';
+import httpStatus from 'http-status';
+import httpMocks from 'node-mocks-http';
+import moment from 'moment';
+import bcrypt from 'bcryptjs';
+import app from '../../src/app';
+import config from '../../src/config/config';
+import auth from '../../src/middlewares/auth';
+import { tokenService, emailService } from '../../src/services';
+import ApiError from '../../src/utils/ApiError';
+import setupTestDB from '../utils/setupTestDB';
+import { User, Token } from '../../src/models';
+import { roleRights } from '../../src/config/roles';
+import { tokenTypes } from '../../src/config/tokens';
+import { userOne, admin, insertUsers } from '../fixtures/user.fixture';
+import { userOneAccessToken, adminAccessToken } from '../fixtures/token.fixture';
 
 setupTestDB();
 
 describe('Auth routes', () => {
   describe('POST /v1/auth/register', () => {
-    let newUser;
+    let newUser: {
+      name: string;
+      email: string;
+      password: string;
+    };
     beforeEach(() => {
       newUser = {
         name: faker.name.findName(),
@@ -43,7 +47,7 @@ describe('Auth routes', () => {
 
       const dbUser = await User.findById(res.body.user.id);
       expect(dbUser).toBeDefined();
-      expect(dbUser.password).not.toBe(newUser.password);
+      expect(dbUser?.password).not.toBe(newUser.password);
       expect(dbUser).toMatchObject({ name: newUser.name, email: newUser.email, role: 'user', isEmailVerified: false });
 
       expect(res.body.tokens).toEqual({
@@ -276,7 +280,7 @@ describe('Auth routes', () => {
         .expect(httpStatus.NO_CONTENT);
 
       const dbUser = await User.findById(userOne._id);
-      const isPasswordMatch = await bcrypt.compare('password2', dbUser.password);
+      const isPasswordMatch = await bcrypt.compare('password2', dbUser?.password || '');
       expect(isPasswordMatch).toBe(true);
 
       const dbResetPasswordTokenCount = await Token.countDocuments({ user: userOne._id, type: tokenTypes.RESET_PASSWORD });
@@ -398,7 +402,7 @@ describe('Auth routes', () => {
 
       const dbUser = await User.findById(userOne._id);
 
-      expect(dbUser.isEmailVerified).toBe(true);
+      expect(dbUser?.isEmailVerified).toBe(true);
 
       const dbVerifyEmailToken = await Token.countDocuments({
         user: userOne._id,
@@ -457,18 +461,18 @@ describe('Auth middleware', () => {
   test('should call next with no errors if access token is valid', async () => {
     await insertUsers([userOne]);
     const req = httpMocks.createRequest({ headers: { Authorization: `Bearer ${userOneAccessToken}` } });
-    const next = jest.fn();
+    const next = jest.fn<void, [Error?]>();
 
     await auth()(req, httpMocks.createResponse(), next);
 
     expect(next).toHaveBeenCalledWith();
-    expect(req.user._id).toEqual(userOne._id);
+    expect((req.user as { _id: unknown })._id).toEqual(userOne._id);
   });
 
   test('should call next with unauthorized error if access token is not found in header', async () => {
     await insertUsers([userOne]);
     const req = httpMocks.createRequest();
-    const next = jest.fn();
+    const next = jest.fn<void, [Error?]>();
 
     await auth()(req, httpMocks.createResponse(), next);
 
@@ -481,7 +485,7 @@ describe('Auth middleware', () => {
   test('should call next with unauthorized error if access token is not a valid jwt token', async () => {
     await insertUsers([userOne]);
     const req = httpMocks.createRequest({ headers: { Authorization: 'Bearer randomToken' } });
-    const next = jest.fn();
+    const next = jest.fn<void, [Error?]>();
 
     await auth()(req, httpMocks.createResponse(), next);
 
@@ -496,7 +500,7 @@ describe('Auth middleware', () => {
     const expires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
     const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
     const req = httpMocks.createRequest({ headers: { Authorization: `Bearer ${refreshToken}` } });
-    const next = jest.fn();
+    const next = jest.fn<void, [Error?]>();
 
     await auth()(req, httpMocks.createResponse(), next);
 
@@ -511,7 +515,7 @@ describe('Auth middleware', () => {
     const expires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
     const accessToken = tokenService.generateToken(userOne._id, expires, tokenTypes.ACCESS, 'invalidSecret');
     const req = httpMocks.createRequest({ headers: { Authorization: `Bearer ${accessToken}` } });
-    const next = jest.fn();
+    const next = jest.fn<void, [Error?]>();
 
     await auth()(req, httpMocks.createResponse(), next);
 
@@ -526,7 +530,7 @@ describe('Auth middleware', () => {
     const expires = moment().subtract(1, 'minutes');
     const accessToken = tokenService.generateToken(userOne._id, expires, tokenTypes.ACCESS);
     const req = httpMocks.createRequest({ headers: { Authorization: `Bearer ${accessToken}` } });
-    const next = jest.fn();
+    const next = jest.fn<void, [Error?]>();
 
     await auth()(req, httpMocks.createResponse(), next);
 
@@ -538,7 +542,7 @@ describe('Auth middleware', () => {
 
   test('should call next with unauthorized error if user is not found', async () => {
     const req = httpMocks.createRequest({ headers: { Authorization: `Bearer ${userOneAccessToken}` } });
-    const next = jest.fn();
+    const next = jest.fn<void, [Error?]>();
 
     await auth()(req, httpMocks.createResponse(), next);
 
@@ -551,7 +555,7 @@ describe('Auth middleware', () => {
   test('should call next with forbidden error if user does not have required rights and userId is not in params', async () => {
     await insertUsers([userOne]);
     const req = httpMocks.createRequest({ headers: { Authorization: `Bearer ${userOneAccessToken}` } });
-    const next = jest.fn();
+    const next = jest.fn<void, [Error?]>();
 
     await auth('anyRight')(req, httpMocks.createResponse(), next);
 
@@ -563,9 +567,9 @@ describe('Auth middleware', () => {
     await insertUsers([userOne]);
     const req = httpMocks.createRequest({
       headers: { Authorization: `Bearer ${userOneAccessToken}` },
-      params: { userId: userOne._id.toHexString() },
+      params: { userId: userOne._id.toString() },
     });
-    const next = jest.fn();
+    const next = jest.fn<void, [Error?]>();
 
     await auth('anyRight')(req, httpMocks.createResponse(), next);
 
@@ -576,11 +580,11 @@ describe('Auth middleware', () => {
     await insertUsers([admin]);
     const req = httpMocks.createRequest({
       headers: { Authorization: `Bearer ${adminAccessToken}` },
-      params: { userId: userOne._id.toHexString() },
+      params: { userId: userOne._id.toString() },
     });
-    const next = jest.fn();
+    const next = jest.fn<void, [Error?]>();
 
-    await auth(...roleRights.get('admin'))(req, httpMocks.createResponse(), next);
+    await auth(...(roleRights.get('admin') || []))(req, httpMocks.createResponse(), next);
 
     expect(next).toHaveBeenCalledWith();
   });

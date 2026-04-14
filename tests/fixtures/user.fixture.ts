@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const faker = require('faker');
-const User = require('../../src/models/user.model');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import faker from 'faker';
+import User from '../../src/models/user.model';
 
 const password = 'password1';
 const salt = bcrypt.genSaltSync(8);
@@ -34,13 +34,8 @@ const admin = {
   isEmailVerified: false,
 };
 
-const insertUsers = async (users) => {
+const insertUsers = async (users: Record<string, unknown>[]): Promise<void> => {
   await User.insertMany(users.map((user) => ({ ...user, password: hashedPassword })));
 };
 
-module.exports = {
-  userOne,
-  userTwo,
-  admin,
-  insertUsers,
-};
+export { userOne, userTwo, admin, insertUsers };

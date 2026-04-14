@@ -1,9 +1,14 @@
-const faker = require('faker');
-const { User } = require('../../../src/models');
+import faker from 'faker';
+import { User } from '../../../src/models';
 
 describe('User model', () => {
   describe('User validation', () => {
-    let newUser;
+    let newUser: {
+      name: string;
+      email: string;
+      password: string;
+      role: string;
+    };
     beforeEach(() => {
       newUser = {
         name: faker.name.findName(),

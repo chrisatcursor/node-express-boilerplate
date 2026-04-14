@@ -1,8 +1,26 @@
-const mongoose = require('mongoose');
-const setupTestDB = require('../../../utils/setupTestDB');
-const paginate = require('../../../../src/models/plugins/paginate.plugin');
+import mongoose, { Document, Model } from 'mongoose';
+import setupTestDB from '../../../utils/setupTestDB';
+import paginate from '../../../../src/models/plugins/paginate.plugin';
 
-const projectSchema = mongoose.Schema({
+interface IProject extends Document {
+  name: string;
+  tasks: Document[];
+}
+
+interface ITask extends Document {
+  name: string;
+  project: IProject;
+}
+
+interface PaginatedResult<T> {
+  results: T[];
+}
+
+interface PaginateModel<T extends Document> extends Model<T> {
+  paginate(filter: Record<string, unknown>, options: Record<string, unknown>): Promise<PaginatedResult<T>>;
+}
+
+const projectSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -16,9 +34,9 @@ projectSchema.virtual('tasks', {
 });
 
 projectSchema.plugin(paginate);
-const Project = mongoose.model('Project', projectSchema);
+const Project = mongoose.model<IProject, PaginateModel<IProject>>('Project', projectSchema);
 
-const taskSchema = mongoose.Schema({
+const taskSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -31,7 +49,7 @@ const taskSchema = mongoose.Schema({
 });
 
 taskSchema.plugin(paginate);
-const Task = mongoose.model('Task', taskSchema);
+const Task = mongoose.model<ITask, PaginateModel<ITask>>('Task', taskSchema);
 
 setupTestDB();
 
@@ -51,7 +69,7 @@ describe('paginate plugin', () => {
       const task = await Task.create({ name: 'Task One', project: project._id });
 
       const projectPages = await Project.paginate({ _id: project._id }, { populate: 'tasks.project' });
-      const { tasks } = projectPages.results[0];
+      const { tasks } = projectPages.results[0] as IProject;
 
       expect(tasks).toHaveLength(1);
       expect(tasks[0]).toHaveProperty('_id', task._id);
