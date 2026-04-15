@@ -4,6 +4,7 @@ import { Request, Response, NextFunction, RequestHandler } from 'express';
 import ApiError from '../utils/ApiError';
 import { roleRights } from '../config/roles';
 import type { IUser } from '../models/user.model';
+
 type VerifyResolve = () => void;
 type VerifyReject = (reason?: ApiError) => void;
 
