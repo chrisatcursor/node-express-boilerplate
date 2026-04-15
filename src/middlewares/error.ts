@@ -1,31 +1,36 @@
 import mongoose from 'mongoose';
 import httpStatus from 'http-status';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import config = require('../config/config');
 import logger = require('../config/logger');
 import ApiError = require('../utils/ApiError');
 
-type ErrorWithStatus = Error & { statusCode?: number; isOperational?: boolean };
+type MaybeApiError = Error & {
+  statusCode?: number;
+  isOperational?: boolean;
+};
 
-const errorConverter = (err: unknown, _req: Request, _res: Response, next: NextFunction): void => {
-  let error: ErrorWithStatus | ApiError;
-
-  if (err instanceof Error) {
-    error = err as ErrorWithStatus;
-  } else {
-    error = new Error() as ErrorWithStatus;
-  }
+const errorConverter = (err: MaybeApiError, _req: Request, _res: Response, next: NextFunction): void => {
+  let error: ApiError | MaybeApiError = err;
   if (!(error instanceof ApiError)) {
-    const statusCode =
-      error.statusCode || error instanceof mongoose.Error ? httpStatus.BAD_REQUEST : httpStatus.INTERNAL_SERVER_ERROR;
-    const message = error.message || (httpStatus[statusCode] as string);
-    error = new ApiError(statusCode, message, false, error.stack);
+    const hasStatusCode = typeof (error as { statusCode?: number }).statusCode === 'number';
+    let statusCode: number;
+    if (hasStatusCode) {
+      statusCode = (error as { statusCode: number }).statusCode;
+    } else if (error instanceof mongoose.Error) {
+      statusCode = httpStatus.BAD_REQUEST;
+    } else {
+      statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+    }
+
+    const statusText = httpStatus[statusCode as keyof typeof httpStatus];
+    const message: string = error.message || String(statusText);
+    error = new ApiError(statusCode, message, false, err.stack);
   }
   next(error);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const errorHandler = (err: ApiError, _req: Request, res: Response, _next: NextFunction): void => {
+const errorHandler = (err: ApiError, _req: Request, res: Response): void => {
   let { statusCode, message } = err;
   if (config.env === 'production' && !err.isOperational) {
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;

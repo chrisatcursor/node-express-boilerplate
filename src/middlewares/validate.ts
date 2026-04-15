@@ -1,16 +1,17 @@
 import Joi from 'joi';
 import httpStatus from 'http-status';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import pick = require('../utils/pick');
 import ApiError = require('../utils/ApiError');
 
-type ValidationSchema = Partial<Record<'params' | 'query' | 'body', Joi.ObjectSchema>>;
+type ValidationSchema = Partial<Record<'params' | 'query' | 'body', Joi.Schema>>;
 
 const validate =
-  (schema: ValidationSchema) =>
+  (schema: ValidationSchema): RequestHandler =>
   (req: Request, _res: Response, next: NextFunction): void => {
     const validSchema = pick(schema, ['params', 'query', 'body']);
-    const object = pick(req, Object.keys(validSchema) as Array<keyof Request>);
+    const requestData = req as unknown as Record<string, unknown>;
+    const object = pick(requestData, Object.keys(validSchema));
     const { value, error } = Joi.compile(validSchema)
       .prefs({ errors: { label: 'key' }, abortEarly: false })
       .validate(object);
@@ -24,4 +25,6 @@ const validate =
     next();
   };
 
-export = validate;
+export default validate;
+
+module.exports = validate;
