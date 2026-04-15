@@ -49,7 +49,6 @@ const Token = mongoose.model<IToken>('Token', tokenSchema);
 
 export default Token;
 
-// @ts-expect-error: CJS compat — services require() this file directly and expect the model
+// CJS compatibility for JS files that still require this model directly.
 module.exports = Token;
-// @ts-expect-error: preserve .default for ESM-style barrel re-exports
 module.exports.default = Token;

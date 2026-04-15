@@ -1,26 +1,29 @@
-const request = require('supertest');
-const faker = require('faker');
-const httpStatus = require('http-status');
-const httpMocks = require('node-mocks-http');
-const moment = require('moment');
-const bcrypt = require('bcryptjs');
-const app = require('../../src/app');
-const config = require('../../src/config/config');
-const auth = require('../../src/middlewares/auth');
-const { tokenService, emailService } = require('../../src/services');
-const ApiError = require('../../src/utils/ApiError');
-const setupTestDB = require('../utils/setupTestDB');
-const { User, Token } = require('../../src/models');
-const { roleRights } = require('../../src/config/roles');
-const { tokenTypes } = require('../../src/config/tokens');
-const { userOne, admin, insertUsers } = require('../fixtures/user.fixture');
-const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// TODO(ts-migration): Integration test payload/response shapes are intentionally loose fixtures.
+
+import request from 'supertest';
+import faker from 'faker';
+import httpStatus from 'http-status';
+import httpMocks from 'node-mocks-http';
+import moment from 'moment';
+import bcrypt from 'bcryptjs';
+import app from '../../src/app';
+import config from '../../src/config/config';
+import auth from '../../src/middlewares/auth';
+import { tokenService, emailService } from '../../src/services';
+import ApiError from '../../src/utils/ApiError';
+import setupTestDB from '../utils/setupTestDB';
+import { User, Token } from '../../src/models';
+import { roleRights } from '../../src/config/roles';
+import { tokenTypes } from '../../src/config/tokens';
+import { userOne, admin, insertUsers } from '../fixtures/user.fixture';
+import { userOneAccessToken, adminAccessToken } from '../fixtures/token.fixture';
 
 setupTestDB();
 
 describe('Auth routes', () => {
   describe('POST /v1/auth/register', () => {
-    let newUser;
+    let newUser: Record<string, any>; // TODO(ts-migration): test mutates ad-hoc payload keys across cases
     beforeEach(() => {
       newUser = {
         name: faker.name.findName(),
@@ -462,7 +465,7 @@ describe('Auth middleware', () => {
     await auth()(req, httpMocks.createResponse(), next);
 
     expect(next).toHaveBeenCalledWith();
-    expect(req.user._id).toEqual(userOne._id);
+    expect((req as any).user._id).toEqual(userOne._id); // TODO(ts-migration): node-mocks-http request lacks Express auth augmentation typing
   });
 
   test('should call next with unauthorized error if access token is not found in header', async () => {
@@ -580,7 +583,8 @@ describe('Auth middleware', () => {
     });
     const next = jest.fn();
 
-    await auth(...roleRights.get('admin'))(req, httpMocks.createResponse(), next);
+    const adminRights = roleRights.get('admin') ?? [];
+    await auth(...adminRights)(req, httpMocks.createResponse(), next);
 
     expect(next).toHaveBeenCalledWith();
   });

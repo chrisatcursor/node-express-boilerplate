@@ -1,9 +1,10 @@
-const faker = require('faker');
-const { User } = require('../../../src/models');
+import faker from 'faker';
+import { User } from '../../../src/models';
+import type { Role } from '../../../src/config/roles';
 
 describe('User model', () => {
   describe('User validation', () => {
-    let newUser;
+    let newUser: { name: string; email: string; password: string; role: Role | 'invalid' };
     beforeEach(() => {
       newUser = {
         name: faker.name.findName(),
@@ -49,7 +50,7 @@ describe('User model', () => {
         name: faker.name.findName(),
         email: faker.internet.email().toLowerCase(),
         password: 'password1',
-        role: 'user',
+        role: 'user' as Role,
       };
       expect(new User(newUser).toJSON()).not.toHaveProperty('password');
     });
