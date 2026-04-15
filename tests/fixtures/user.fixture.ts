@@ -1,13 +1,22 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const faker = require('faker');
-const User = require('../../src/models/user.model');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import faker from 'faker';
+import User from '../../src/models/user.model';
 
 const password = 'password1';
 const salt = bcrypt.genSaltSync(8);
 const hashedPassword = bcrypt.hashSync(password, salt);
 
-const userOne = {
+type FixtureUser = {
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  email: string;
+  password: string;
+  role: 'user' | 'admin';
+  isEmailVerified: boolean;
+};
+
+const userOne: FixtureUser = {
   _id: mongoose.Types.ObjectId(),
   name: faker.name.findName(),
   email: faker.internet.email().toLowerCase(),
@@ -16,7 +25,7 @@ const userOne = {
   isEmailVerified: false,
 };
 
-const userTwo = {
+const userTwo: FixtureUser = {
   _id: mongoose.Types.ObjectId(),
   name: faker.name.findName(),
   email: faker.internet.email().toLowerCase(),
@@ -25,7 +34,7 @@ const userTwo = {
   isEmailVerified: false,
 };
 
-const admin = {
+const admin: FixtureUser = {
   _id: mongoose.Types.ObjectId(),
   name: faker.name.findName(),
   email: faker.internet.email().toLowerCase(),
@@ -34,13 +43,9 @@ const admin = {
   isEmailVerified: false,
 };
 
-const insertUsers = async (users) => {
+const insertUsers = async (users: FixtureUser[]): Promise<void> => {
   await User.insertMany(users.map((user) => ({ ...user, password: hashedPassword })));
 };
 
-module.exports = {
-  userOne,
-  userTwo,
-  admin,
-  insertUsers,
-};
+export { userOne, userTwo, admin, insertUsers };
+export type { FixtureUser };

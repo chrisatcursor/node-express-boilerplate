@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
-const { toJSON } = require('../../../../src/models/plugins');
+import mongoose from 'mongoose';
+import { toJSON } from '../../../../src/models/plugins';
 
 describe('toJSON plugin', () => {
-  let connection;
+  let connection: mongoose.Connection;
 
   beforeEach(() => {
     connection = mongoose.createConnection();
@@ -73,7 +73,7 @@ describe('toJSON plugin', () => {
       },
       {
         toJSON: {
-          transform: (doc, ret) => {
+          transform: (_doc: unknown, ret: { private?: string }) => {
             // eslint-disable-next-line no-param-reassign
             delete ret.private;
           },

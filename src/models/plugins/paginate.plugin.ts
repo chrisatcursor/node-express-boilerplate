@@ -53,10 +53,11 @@ const paginate = (schema: Schema<any>): void => {
     if (options.populate) {
       options.populate.split(',').forEach((populateOption: string) => {
         docsPromise = docsPromise.populate(
+          // TODO(ts-migration): nested populate objects use mixed string/object accumulator
           populateOption
             .split('.')
             .reverse()
-            .reduce((a: string | object, b: string) => ({ path: b, populate: a }))
+            .reduce<unknown>((a, b) => ({ path: b, populate: a }), undefined)
         );
       });
     }
@@ -79,8 +80,3 @@ const paginate = (schema: Schema<any>): void => {
 };
 
 export default paginate;
-
-// @ts-expect-error: CJS compat — tests require() this file directly and expect a function
-module.exports = paginate;
-// @ts-expect-error: preserve .default for ESM-style barrel re-exports
-module.exports.default = paginate;

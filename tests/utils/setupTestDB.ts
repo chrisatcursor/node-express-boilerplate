@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
-const config = require('../../src/config/config');
+import mongoose from 'mongoose';
+import config from '../../src/config/config';
 
-const setupTestDB = () => {
+const setupTestDB = (): void => {
   beforeAll(async () => {
     await mongoose.connect(config.mongoose.url, config.mongoose.options);
   });
@@ -14,5 +14,4 @@ const setupTestDB = () => {
     await mongoose.disconnect();
   });
 };
-
-module.exports = setupTestDB;
+export default setupTestDB;

@@ -1,10 +1,12 @@
-const mongoose = require('mongoose');
-const httpStatus = require('http-status');
-const httpMocks = require('node-mocks-http');
-const { errorConverter, errorHandler } = require('../../../src/middlewares/error');
-const ApiError = require('../../../src/utils/ApiError');
-const config = require('../../../src/config/config');
-const logger = require('../../../src/config/logger');
+import mongoose from 'mongoose';
+import httpStatus from 'http-status';
+import httpMocks from 'node-mocks-http';
+import { errorConverter, errorHandler } from '../../../src/middlewares/error';
+import ApiError from '../../../src/utils/ApiError';
+import config from '../../../src/config/config';
+import logger from '../../../src/config/logger';
+
+type StatusError = Error & { statusCode?: number };
 
 describe('Error middlewares', () => {
   describe('Error converter', () => {
@@ -18,7 +20,7 @@ describe('Error middlewares', () => {
     });
 
     test('should convert an Error to ApiError and preserve its status and message', () => {
-      const error = new Error('Any error');
+      const error: StatusError = new Error('Any error');
       error.statusCode = httpStatus.BAD_REQUEST;
       const next = jest.fn();
 
@@ -51,7 +53,7 @@ describe('Error middlewares', () => {
     });
 
     test('should convert an Error without message to ApiError with default message of that http status', () => {
-      const error = new Error();
+      const error: StatusError = new Error();
       error.statusCode = httpStatus.BAD_REQUEST;
       const next = jest.fn();
 
@@ -102,7 +104,7 @@ describe('Error middlewares', () => {
 
   describe('Error handler', () => {
     beforeEach(() => {
-      jest.spyOn(logger, 'error').mockImplementation(() => {});
+      jest.spyOn(logger, 'error').mockImplementation(() => undefined);
     });
 
     test('should send proper error response and put the error message in res.locals', () => {

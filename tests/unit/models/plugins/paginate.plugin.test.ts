@@ -1,6 +1,7 @@
-const mongoose = require('mongoose');
-const setupTestDB = require('../../../utils/setupTestDB');
-const paginate = require('../../../../src/models/plugins/paginate.plugin');
+import mongoose from 'mongoose';
+import setupTestDB from '../../../utils/setupTestDB';
+import paginate from '../../../../src/models/plugins/paginate.plugin';
+import type { QueryResult } from '../../../../src/models/plugins/paginate.plugin';
 
 const projectSchema = mongoose.Schema({
   name: {
@@ -41,17 +42,24 @@ describe('paginate plugin', () => {
       const project = await Project.create({ name: 'Project One' });
       const task = await Task.create({ name: 'Task One', project: project._id });
 
-      const taskPages = await Task.paginate({ _id: task._id }, { populate: 'project' });
+      const taskPages = (await (Task as unknown as { paginate: (...args: unknown[]) => Promise<QueryResult> }).paginate(
+        { _id: task._id },
+        { populate: 'project' }
+      )) as QueryResult;
 
-      expect(taskPages.results[0].project).toHaveProperty('_id', project._id);
+      expect((taskPages.results[0] as unknown as { project: { _id: unknown } }).project).toHaveProperty('_id', project._id);
     });
 
     test('should populate nested fields', async () => {
       const project = await Project.create({ name: 'Project One' });
       const task = await Task.create({ name: 'Task One', project: project._id });
 
-      const projectPages = await Project.paginate({ _id: project._id }, { populate: 'tasks.project' });
-      const { tasks } = projectPages.results[0];
+      const projectPages = (await (
+        Project as unknown as { paginate: (...args: unknown[]) => Promise<QueryResult> }
+      ).paginate({ _id: project._id }, { populate: 'tasks.project' })) as QueryResult;
+      const { tasks } = projectPages.results[0] as unknown as {
+        tasks: Array<{ _id: unknown; project: { _id: unknown } }>;
+      };
 
       expect(tasks).toHaveLength(1);
       expect(tasks[0]).toHaveProperty('_id', task._id);
