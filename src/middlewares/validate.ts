@@ -25,4 +25,6 @@ const validate =
     next();
   };
 
-export = validate;
+export default validate;
+
+module.exports = validate;
