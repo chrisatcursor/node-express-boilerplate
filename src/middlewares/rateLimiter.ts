@@ -1,3 +1,4 @@
+// @ts-expect-error -- TODO(ts-migration): express-rate-limit types are unavailable in this branch toolchain
 import rateLimit from 'express-rate-limit';
 
 const authLimiter = rateLimit({
@@ -6,5 +7,5 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 });
 
-export { authLimiter };
 export default authLimiter;
+export { authLimiter };
