@@ -1,6 +1,7 @@
 import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions, VerifiedCallback } from 'passport-jwt';
 import config = require('./config');
 import { tokenTypes } from './tokens';
+// @ts-expect-error models barrel is still JS; typed imports arrive in Batch 3
 import { User } from '../models';
 
 interface JwtPayload {
