@@ -47,6 +47,23 @@ components:
         message:
           type: string
 
+    ChartDataPoint:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        value:
+          type: integer
+        percentage:
+          type: number
+      example:
+        key: open
+        label: Open
+        value: 7
+        percentage: 38.9
+
   responses:
     DuplicateEmail:
       description: Email already taken
