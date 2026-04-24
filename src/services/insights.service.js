@@ -35,10 +35,7 @@ const buildCountMap = async (field) => {
     },
   ]);
 
-  return aggregation.reduce((memo, item) => {
-    memo[item._id] = item.count;
-    return memo;
-  }, {});
+  return Object.fromEntries(aggregation.map((item) => [item._id, item.count]));
 };
 
 const mapCountsToSeries = (order, labels, countsByKey) =>
