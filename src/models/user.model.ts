@@ -98,8 +98,3 @@ userSchema.pre('save', async function (next) {
 const User = mongoose.model<IUser, IUserModel>('User', userSchema);
 
 export default User;
-
-// @ts-expect-error: CJS compat — test fixtures require() this file directly and expect the model
-module.exports = User;
-// @ts-expect-error: preserve .default for ESM-style barrel re-exports
-module.exports.default = User;
