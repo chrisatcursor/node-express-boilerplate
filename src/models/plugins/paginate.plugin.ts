@@ -50,12 +50,15 @@ const paginate = <T extends Document>(schema: Schema<T>): void => {
 
     if (options.populate) {
       options.populate.split(',').forEach((populateOption: string) => {
-        docsPromise = docsPromise.populate(
-          populateOption
-            .split('.')
-            .reverse()
-            .reduce<PopulatePath>((a, b) => ({ path: b, populate: a }), '')
+        const [firstPopulatePath, ...remainingPopulatePaths] = populateOption.split('.').reverse();
+        if (!firstPopulatePath) {
+          return;
+        }
+        const populatePath = remainingPopulatePaths.reduce<PopulatePath>(
+          (acc, path) => ({ path, populate: acc }),
+          firstPopulatePath
         );
+        docsPromise = docsPromise.populate(populatePath);
       });
     }
 
@@ -77,3 +80,6 @@ const paginate = <T extends Document>(schema: Schema<T>): void => {
 };
 
 export default paginate;
+
+module.exports = paginate;
+module.exports.default = paginate;
