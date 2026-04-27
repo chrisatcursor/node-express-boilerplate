@@ -20,16 +20,13 @@ export interface QueryResult {
 }
 
 export interface PaginateModel<T extends Document> extends Model<T> {
-  paginate(filter: Record<string, unknown>, options: PaginateOptions): Promise<QueryResult>;
+  paginate(filter: FilterQuery<T>, options: PaginateOptions): Promise<QueryResult>;
 }
 
 const paginate = <T extends Document>(schema: Schema<T>): void => {
   // TODO(ts-migration): Mongoose statics type does not include custom methods
   // eslint-disable-next-line dot-notation
-  schema.statics['paginate'] = async function (
-    filter: Record<string, unknown>,
-    options: PaginateOptions
-  ): Promise<QueryResult> {
+  schema.statics['paginate'] = async function (filter: FilterQuery<T>, options: PaginateOptions): Promise<QueryResult> {
     let sort = '';
     if (options.sortBy) {
       const sortingCriteria: string[] = [];
