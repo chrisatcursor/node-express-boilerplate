@@ -11,7 +11,7 @@ interface ErrorWithStatus extends Error {
 
 const httpStatusMessages = httpStatus as unknown as Record<number, string>;
 
-const getStatusMessage = (statusCode: number): string => httpStatusMessages[statusCode] || String(statusCode);
+const getStatusMessage = (statusCode: number): string => httpStatusMessages[statusCode] as string;
 
 const errorConverter = (err: ErrorWithStatus, _req: Request, _res: Response, next: NextFunction): void => {
   let error: ErrorWithStatus | ApiError = err;
@@ -24,6 +24,7 @@ const errorConverter = (err: ErrorWithStatus, _req: Request, _res: Response, nex
   next(error);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const errorHandler: ErrorRequestHandler = (err: ApiError, _req: Request, res: Response, _next: NextFunction): void => {
   let { statusCode, message } = err;
   if (config.env === 'production' && !err.isOperational) {

@@ -48,3 +48,6 @@ tokenSchema.plugin(toJSON);
 const Token = mongoose.model<IToken>('Token', tokenSchema);
 
 export default Token;
+
+module.exports = Token;
+module.exports.default = Token;

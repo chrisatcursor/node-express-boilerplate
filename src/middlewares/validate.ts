@@ -14,8 +14,7 @@ type RequestSegment = 'params' | 'query' | 'body';
 
 const validate =
   (schema: ValidationSchema): RequestHandler =>
-  (req: Request, res: Response, next: NextFunction): void => {
-    void res;
+  (req: Request, _res: Response, next: NextFunction): void => {
     const validSchema = pick(schema, ['params', 'query', 'body']);
     const object = pick(req, Object.keys(validSchema) as RequestSegment[]);
     const { value, error } = Joi.compile(validSchema as Record<RequestSegment, Schema>)

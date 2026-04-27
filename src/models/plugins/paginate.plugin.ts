@@ -21,9 +21,9 @@ export interface PaginateModel<T extends Document> extends Model<T> {
   paginate(filter: Record<string, unknown>, options: PaginateOptions): Promise<QueryResult>;
 }
 
-// TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
+// TODO(ts-migration): Schema generic kept loose for Mongoose plugin compatibility with typed schemas
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const paginate = (schema: Schema<any>): void => {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
   // TODO(ts-migration): Mongoose statics type does not include custom methods
   // eslint-disable-next-line dot-notation
   schema.statics['paginate'] = async function (
