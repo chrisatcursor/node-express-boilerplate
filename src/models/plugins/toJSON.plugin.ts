@@ -10,6 +10,12 @@ interface SchemaWithMutableToJSONOptions {
   };
 }
 
+interface SchemaPathWithPrivateOption {
+  options?: {
+    private?: boolean;
+  };
+}
+
 const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: number): void => {
   if (index === path.length - 1) {
     delete obj[path[index] as string];
@@ -29,8 +35,8 @@ const toJSON = <T extends Document>(schema: Schema<T>): void => {
     transform(doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) {
       Object.keys(schema.paths).forEach((path) => {
         // TODO(ts-migration): Mongoose SchemaType does not expose options in its public typedef
-        const schemaPath = schema.paths[path] as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-        if (schemaPath?.options?.private) {
+        const schemaPath = schema.paths[path] as SchemaPathWithPrivateOption;
+        if (schemaPath.options && schemaPath.options.private) {
           deleteAtPath(ret, path.split('.'), 0);
         }
       });
