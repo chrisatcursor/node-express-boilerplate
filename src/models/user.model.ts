@@ -99,5 +99,6 @@ const User = mongoose.model<IUser, IUserModel>('User', userSchema);
 
 export default User;
 
+// CJS compat: JS test fixtures require this model directly until Batch 9.
 module.exports = User;
 module.exports.default = User;

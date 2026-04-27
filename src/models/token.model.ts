@@ -49,5 +49,6 @@ const Token = mongoose.model<IToken>('Token', tokenSchema);
 
 export default Token;
 
+// CJS compat: JS tests and services require() this file directly until Batch 9 migrates tests.
 module.exports = Token;
 module.exports.default = Token;
