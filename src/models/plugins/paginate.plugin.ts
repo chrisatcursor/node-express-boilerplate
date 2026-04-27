@@ -50,10 +50,7 @@ const paginate = <T extends Document>(schema: Schema<T>): void => {
 
     if (options.populate) {
       options.populate.split(',').forEach((populateOption: string) => {
-        const [firstPopulatePath, ...remainingPopulatePaths] = populateOption.split('.').reverse();
-        if (!firstPopulatePath) {
-          return;
-        }
+        const [firstPopulatePath, ...remainingPopulatePaths] = populateOption.split('.').reverse() as [string, ...string[]];
         const populatePath = remainingPopulatePaths.reduce<PopulatePath>(
           (acc, path) => ({ path, populate: acc }),
           firstPopulatePath
