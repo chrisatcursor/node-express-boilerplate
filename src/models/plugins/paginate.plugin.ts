@@ -56,7 +56,7 @@ const paginate = (schema: Schema<any>): void => {
           populateOption
             .split('.')
             .reverse()
-            .reduce((a: string | object, b: string) => ({ path: b, populate: a }))
+            .reduce<object | string>((a: string | object, b: string) => ({ path: b, populate: a }), '')
         );
       });
     }
@@ -80,7 +80,5 @@ const paginate = (schema: Schema<any>): void => {
 
 export default paginate;
 
-// @ts-expect-error: CJS compat — tests require() this file directly and expect a function
 module.exports = paginate;
-// @ts-expect-error: preserve .default for ESM-style barrel re-exports
 module.exports.default = paginate;
