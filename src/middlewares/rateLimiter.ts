@@ -1,4 +1,3 @@
-// @ts-expect-error -- TODO(ts-migration): express-rate-limit has no type declarations in this dependency set
 import rateLimit from 'express-rate-limit';
 
 const authLimiter = rateLimit({
