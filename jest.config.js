@@ -1,4 +1,5 @@
 module.exports = {
+  preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'node',
   testEnvironmentOptions: {
     NODE_ENV: 'test',

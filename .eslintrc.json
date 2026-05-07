@@ -8,6 +8,18 @@
   "parserOptions": {
     "ecmaVersion": 2018
   },
+  "overrides": [
+    {
+      "files": ["**/*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "extends": ["plugin:@typescript-eslint/recommended"],
+      "parserOptions": {
+        "project": "./tsconfig.json",
+        "sourceType": "module"
+      }
+    }
+  ],
   "rules": {
     "no-console": "error",
     "func-names": "off",
