@@ -1,5 +1,12 @@
 module.exports = {
   preset: 'ts-jest/presets/js-with-ts',
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        allowJs: true,
+      },
+    },
+  },
   testEnvironment: 'node',
   testEnvironmentOptions: {
     NODE_ENV: 'test',
