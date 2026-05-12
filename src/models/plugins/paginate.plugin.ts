@@ -3,6 +3,8 @@
 import { Schema, Document, FilterQuery, Model } from 'mongoose';
 
 type PopulatePath = string | { path: string; populate: PopulatePath };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MongoosePopulateQuery = any; // TODO(ts-migration): Mongoose query chaining returns complex generic types; typed loosely here
 
 export interface PaginateOptions {
   sortBy?: string;
@@ -45,8 +47,7 @@ const paginate = <T extends Document>(schema: Schema<T>): void => {
 
     const queryFilter = filter as FilterQuery<T>;
     const countPromise = this.countDocuments(queryFilter).exec();
-    // TODO(ts-migration): Mongoose query chaining returns complex generic types; typed loosely here
-    let docsPromise: any = this.find(queryFilter).sort(sort).skip(skip).limit(limit); // eslint-disable-line @typescript-eslint/no-explicit-any
+    let docsPromise: MongoosePopulateQuery = this.find(queryFilter).sort(sort).skip(skip).limit(limit);
 
     if (options.populate) {
       options.populate.split(',').forEach((populateOption: string) => {
