@@ -3,7 +3,7 @@
 import { Schema, Document, FilterQuery, Model } from 'mongoose';
 
 type PopulatePath = string | { path: string; populate: PopulatePath };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line
 type MongoosePopulateQuery = any; // TODO(ts-migration): Mongoose query chaining returns complex generic types; typed loosely here
 
 export interface PaginateOptions {
