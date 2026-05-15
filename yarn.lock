@@ -1133,15 +1133,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bcryptjs@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@types/bcryptjs@npm:3.0.0"
-  dependencies:
-    bcryptjs: "npm:*"
-  checksum: 10c0/5d61ce381736f8252627cf32f2bbc17003c0361c6cf63ac23034a651b9c1edfdbf8f786730816e0b5257a927ffa369658562183a68495eb07ca2ddc77fbb171c
-  languageName: node
-  linkType: hard
-
 "@types/body-parser@npm:*":
   version: 1.19.6
   resolution: "@types/body-parser@npm:1.19.6"
@@ -2299,15 +2290,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bcryptjs@npm:*":
-  version: 3.0.3
-  resolution: "bcryptjs@npm:3.0.3"
-  bin:
-    bcrypt: bin/bcrypt
-  checksum: 10c0/127c94699f07eab5fbbb89d600c3f0e36ae6fd001e028139740b41fffb62a23a2743523fb88f442ae3308a27d4843b97ccb9e436d78f5c5899be187d0972c6d5
-  languageName: node
-  linkType: hard
-
 "bcryptjs@npm:^2.4.3":
   version: 2.4.3
   resolution: "bcryptjs@npm:2.4.3"
@@ -3139,7 +3121,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "create-nodejs-express-app@workspace:."
   dependencies:
-    "@types/bcryptjs": "npm:^3.0.0"
     "@types/compression": "npm:^1.8.1"
     "@types/cors": "npm:^2.8.19"
     "@types/express": "npm:^5.0.6"
