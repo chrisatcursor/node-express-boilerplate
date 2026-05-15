@@ -27,7 +27,7 @@ const toJSON = <T extends Document>(schema: Schema<T>): void => {
     transform(doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) {
       Object.keys(schema.paths).forEach((path) => {
         const schemaPath = schema.paths[path] as { options?: ToJSONOptions };
-        if (schemaPath?.options?.private) {
+        if (schemaPath.options && schemaPath.options.private) {
           deleteAtPath(ret, path.split('.'), 0);
         }
       });

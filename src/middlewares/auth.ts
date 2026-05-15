@@ -6,7 +6,9 @@ import type { IUser } from '../models';
 import ApiError = require('../utils/ApiError');
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface User extends IUser {}
   }
 }
@@ -20,8 +22,8 @@ const verifyCallback =
     req.user = user;
 
     if (requiredRights.length) {
-      const userRights = roleRights.get(user.role);
-      const hasRequiredRights = requiredRights.every((requiredRight) => userRights?.includes(requiredRight));
+      const userRights = roleRights.get(user.role) as string[];
+      const hasRequiredRights = requiredRights.every((requiredRight) => userRights.includes(requiredRight));
       if (!hasRequiredRights && req.params.userId !== user.id) {
         return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
       }

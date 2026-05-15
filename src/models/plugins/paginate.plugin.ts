@@ -22,8 +22,8 @@ export interface PaginateModel<T extends Document> extends Model<T> {
 }
 
 // TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const paginate = (schema: Schema<any>): void => {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
   // TODO(ts-migration): Mongoose statics type does not include custom methods
   // eslint-disable-next-line dot-notation
   schema.statics['paginate'] = async function (
@@ -55,7 +55,7 @@ const paginate = (schema: Schema<any>): void => {
         const populatePath = populateOption.split('.').reverse();
         const nestedPopulate = populatePath
           .slice(1)
-          .reduce<Record<string, unknown> | string>((populate, path) => ({ path, populate }), populatePath[0] ?? '');
+          .reduce<Record<string, unknown> | string>((populate, path) => ({ path, populate }), populatePath[0] as string);
         docsPromise = docsPromise.populate(nestedPopulate);
       });
     }
