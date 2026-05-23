@@ -7,12 +7,6 @@ import type { IUser } from '../models/user.model';
 
 type AuthMiddleware = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 
-declare global {
-  namespace Express {
-    interface User extends IUser {}
-  }
-}
-
 const verifyCallback =
   (req: Request, resolve: () => void, reject: (err: ApiError) => void, requiredRights: string[]) =>
   async (err: Error | null, user: IUser | false, info: unknown): Promise<void> => {
@@ -24,7 +18,11 @@ const verifyCallback =
 
     if (requiredRights.length) {
       const userRights = roleRights.get(user.role);
-      const hasRequiredRights = requiredRights.every((requiredRight: string) => userRights!.includes(requiredRight));
+      if (!userRights) {
+        reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+        return;
+      }
+      const hasRequiredRights = requiredRights.every((requiredRight: string) => userRights.includes(requiredRight));
       if (!hasRequiredRights && req.params.userId !== user.id) {
         reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
         return;
@@ -38,11 +36,7 @@ const auth =
   (...requiredRights: string[]): AuthMiddleware =>
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
-      passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRights))(
-        req,
-        res,
-        next
-      );
+      passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRights))(req, res, next);
     })
       .then(() => next())
       .catch((err: Error) => next(err));
