@@ -1,9 +1,11 @@
-import type { NextFunction, Request, RequestHandler, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import passport from 'passport';
 import httpStatus from 'http-status';
 import ApiError = require('../utils/ApiError');
 import { roleRights } from '../config/roles';
 import type { IUser } from '../models/user.model';
+
+type AuthMiddleware = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 
 declare global {
   namespace Express {
@@ -33,9 +35,9 @@ const verifyCallback =
   };
 
 const auth =
-  (...requiredRights: string[]): RequestHandler =>
-  (req: Request, res: Response, next: NextFunction): void => {
-    new Promise<void>((resolve, reject) => {
+  (...requiredRights: string[]): AuthMiddleware =>
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    return new Promise<void>((resolve, reject) => {
       passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRights))(
         req,
         res,
