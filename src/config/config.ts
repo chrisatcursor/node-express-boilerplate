@@ -61,6 +61,15 @@ interface Config {
     };
     from: string;
   };
+  featureFlags: FeatureFlag[];
+}
+
+interface FeatureFlag {
+  key: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  isNew: boolean;
 }
 
 const config: Config = {
@@ -92,6 +101,36 @@ const config: Config = {
     },
     from: envVars.EMAIL_FROM,
   },
+  featureFlags: [
+    {
+      key: 'labsPage',
+      name: 'Labs page',
+      description: 'Enables the Labs page in navigation',
+      enabled: true,
+      isNew: true,
+    },
+    {
+      key: 'apiDocs',
+      name: 'API docs',
+      description: 'Expose Swagger API docs in development mode',
+      enabled: envVars.NODE_ENV === 'development',
+      isNew: false,
+    },
+    {
+      key: 'userManagement',
+      name: 'User management',
+      description: 'Allow CRUD management of project users',
+      enabled: true,
+      isNew: false,
+    },
+    {
+      key: 'emailVerification',
+      name: 'Email verification',
+      description: 'Require and support user email verification flows',
+      enabled: true,
+      isNew: false,
+    },
+  ],
 };
 
 export = config;
