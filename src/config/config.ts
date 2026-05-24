@@ -32,6 +32,14 @@ if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
 
+interface FeatureFlag {
+  key: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  isNew: boolean;
+}
+
 interface Config {
   env: string;
   port: number;
@@ -62,14 +70,6 @@ interface Config {
     from: string;
   };
   featureFlags: FeatureFlag[];
-}
-
-interface FeatureFlag {
-  key: string;
-  name: string;
-  description: string;
-  enabled: boolean;
-  isNew: boolean;
 }
 
 const config: Config = {
