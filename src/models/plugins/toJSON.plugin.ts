@@ -2,10 +2,8 @@
 
 import { Schema, Document } from 'mongoose';
 
-type SchemaWithToJson = Schema<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  any // TODO(ts-migration): base Schema type keeps plugin compatible with typed schemas
-> & {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SchemaWithToJson = Schema</* TODO(ts-migration): base Schema type keeps plugin compatible */ any> & {
   options: {
     toJSON?: {
       transform?: (doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown;
@@ -23,7 +21,7 @@ const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: numbe
 
 const toJSON = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  schema: Schema<any> // TODO(ts-migration): base Schema type keeps plugin compatible with typed schemas
+  schema: Schema</* TODO(ts-migration): base Schema type keeps plugin compatible */ any>
 ): void => {
   const typedSchema = schema as SchemaWithToJson;
   let transform: ((doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown) | undefined;
