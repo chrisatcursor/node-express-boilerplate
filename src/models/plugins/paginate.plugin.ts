@@ -22,6 +22,7 @@ export interface PaginateModel<T extends Document> extends Model<T> {
 }
 
 const paginate = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema: Schema<any> // TODO(ts-migration): base Schema type keeps plugin compatible with typed schemas
 ): void => {
   // TODO(ts-migration): Mongoose statics type does not include custom methods
@@ -47,6 +48,7 @@ const paginate = (
     const skip = (page - 1) * limit;
 
     const countPromise = this.countDocuments(filter).exec();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let docsPromise: any = this.find(filter).sort(sort).skip(skip).limit(limit); // TODO(ts-migration): legacy Mongoose query chaining has unstable generic types
 
     if (options.populate) {
