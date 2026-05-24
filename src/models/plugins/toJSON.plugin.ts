@@ -2,7 +2,7 @@
 
 import { Schema, Document } from 'mongoose';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO(ts-migration): plugin compatibility requires broad Schema type
 type SchemaWithToJson = Schema</* TODO(ts-migration): base Schema type keeps plugin compatible */ any> & {
   options: {
     toJSON?: {
@@ -20,7 +20,7 @@ const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: numbe
 };
 
 const toJSON = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO(ts-migration): plugin compatibility requires broad Schema type
   schema: Schema</* TODO(ts-migration): base Schema type keeps plugin compatible */ any>
 ): void => {
   const typedSchema = schema as SchemaWithToJson;
