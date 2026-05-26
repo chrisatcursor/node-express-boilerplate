@@ -2,6 +2,10 @@
 
 import { Schema, Document } from 'mongoose';
 
+interface ToJSONOptions {
+  private?: boolean;
+}
+
 const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: number): void => {
   if (index === path.length - 1) {
     delete obj[path[index] as string];
@@ -13,16 +17,18 @@ const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: numbe
 // TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
 const toJSON = (schema: Schema<any>): void => {
   // eslint-disable-line @typescript-eslint/no-explicit-any
+  const toJSONOptions = schema.get('toJSON') as Record<string, unknown> | undefined;
   let transform: ((doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown) | undefined;
-  if (schema.options.toJSON && schema.options.toJSON.transform) {
-    transform = schema.options.toJSON.transform as typeof transform;
+  if (toJSONOptions && typeof toJSONOptions.transform === 'function') {
+    transform = toJSONOptions.transform as typeof transform;
   }
 
-  schema.options.toJSON = Object.assign(schema.options.toJSON || {}, {
+  schema.set('toJSON', {
+    ...toJSONOptions,
     transform(doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) {
       Object.keys(schema.paths).forEach((path) => {
         // TODO(ts-migration): Mongoose SchemaType does not expose options in its public typedef
-        const schemaPath = schema.paths[path] as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const schemaPath = schema.paths[path] as { options?: ToJSONOptions };
         if (schemaPath?.options?.private) {
           deleteAtPath(ret, path.split('.'), 0);
         }

@@ -52,11 +52,12 @@ const paginate = (schema: Schema<any>): void => {
 
     if (options.populate) {
       options.populate.split(',').forEach((populateOption: string) => {
+        const populatePath = (populateOption.split('.').reverse() as unknown[]).reduce((a: unknown, b: unknown) => ({
+          path: String(b),
+          populate: a,
+        }));
         docsPromise = docsPromise.populate(
-          populateOption
-            .split('.')
-            .reverse()
-            .reduce((a: string | object, b: string) => ({ path: b, populate: a }))
+          populatePath
         );
       });
     }
@@ -80,7 +81,5 @@ const paginate = (schema: Schema<any>): void => {
 
 export default paginate;
 
-// @ts-expect-error: CJS compat — tests require() this file directly and expect a function
 module.exports = paginate;
-// @ts-expect-error: preserve .default for ESM-style barrel re-exports
 module.exports.default = paginate;
