@@ -20,9 +20,7 @@ const errorConverter = (err: unknown, _req: Request, _res: Response, next: NextF
   if (!(error instanceof ApiError)) {
     const sourceError = error as Partial<ErrorWithStatus>;
     const statusCode =
-      sourceError.statusCode || error instanceof mongoose.Error
-        ? httpStatus.BAD_REQUEST
-        : httpStatus.INTERNAL_SERVER_ERROR;
+      sourceError.statusCode || error instanceof mongoose.Error ? httpStatus.BAD_REQUEST : httpStatus.INTERNAL_SERVER_ERROR;
     const message = sourceError.message || (httpStatus[statusCode] as string);
     error = new ApiError(statusCode, message, false, sourceError.stack || '');
   }
@@ -30,6 +28,7 @@ const errorConverter = (err: unknown, _req: Request, _res: Response, next: NextF
 };
 
 const errorHandler = (err: ApiError, _req: Request, res: Response, _next: NextFunction): void => {
+  Boolean(_next);
   let { statusCode, message } = err;
   if (config.env === 'production' && !err.isOperational) {
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;

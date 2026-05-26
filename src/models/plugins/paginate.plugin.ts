@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 
-import { Schema, Document, Model } from 'mongoose';
+import { Schema, Document, Model, FilterQuery } from 'mongoose';
 
 export interface PaginateOptions {
   sortBy?: string;
@@ -18,18 +18,13 @@ export interface QueryResult {
 }
 
 export interface PaginateModel<T extends Document> extends Model<T> {
-  paginate(filter: Record<string, unknown>, options: PaginateOptions): Promise<QueryResult>;
+  paginate(filter: FilterQuery<T>, options: PaginateOptions): Promise<QueryResult>;
 }
 
-// TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
-const paginate = (schema: Schema<any>): void => {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
+const paginate = <T extends Document>(schema: Schema<T>): void => {
   // TODO(ts-migration): Mongoose statics type does not include custom methods
   // eslint-disable-next-line dot-notation
-  schema.statics['paginate'] = async function (
-    filter: Record<string, unknown>,
-    options: PaginateOptions
-  ): Promise<QueryResult> {
+  schema.statics['paginate'] = async function (filter: FilterQuery<T>, options: PaginateOptions): Promise<QueryResult> {
     let sort = '';
     if (options.sortBy) {
       const sortingCriteria: string[] = [];
@@ -56,9 +51,7 @@ const paginate = (schema: Schema<any>): void => {
           path: String(b),
           populate: a,
         }));
-        docsPromise = docsPromise.populate(
-          populatePath
-        );
+        docsPromise = docsPromise.populate(populatePath);
       });
     }
 
