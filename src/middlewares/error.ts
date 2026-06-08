@@ -6,10 +6,9 @@ import logger = require('../config/logger');
 import ApiError = require('../utils/ApiError');
 
 type ErrorWithStatus = Error & { statusCode?: number };
-type HttpStatusMessages = Record<number, string | undefined>;
+type HttpStatusMessages = Record<number, string>;
 
-const getStatusMessage = (statusCode: number): string =>
-  (httpStatus as unknown as HttpStatusMessages)[statusCode] || String(statusCode);
+const getStatusMessage = (statusCode: number): string => (httpStatus as unknown as HttpStatusMessages)[statusCode] as string;
 
 const errorConverter = (err: Error | ApiError, _req: Request, _res: Response, next: NextFunction): void => {
   let error = err;
@@ -23,6 +22,7 @@ const errorConverter = (err: Error | ApiError, _req: Request, _res: Response, ne
   next(error);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const errorHandler = (err: ApiError, _req: Request, res: Response, _next: NextFunction): void => {
   let { statusCode, message } = err;
   if (config.env === 'production' && !err.isOperational) {
