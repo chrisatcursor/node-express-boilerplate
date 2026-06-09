@@ -2,6 +2,8 @@
 
 import { Schema, Document, Model } from 'mongoose';
 
+type PopulatePath = string | { path: string; populate: PopulatePath };
+
 export interface PaginateOptions {
   sortBy?: string;
   populate?: string;
@@ -22,8 +24,8 @@ export interface PaginateModel<T extends Document> extends Model<T> {
 }
 
 // TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const paginate = (schema: Schema<any>): void => {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
   // TODO(ts-migration): Mongoose statics type does not include custom methods
   // eslint-disable-next-line dot-notation
   schema.statics['paginate'] = async function (
@@ -52,12 +54,12 @@ const paginate = (schema: Schema<any>): void => {
 
     if (options.populate) {
       options.populate.split(',').forEach((populateOption: string) => {
-        docsPromise = docsPromise.populate(
-          populateOption
-            .split('.')
-            .reverse()
-            .reduce((a: string | object, b: string) => ({ path: b, populate: a }))
+        const [firstPopulatePath, ...remainingPopulatePaths] = populateOption.split('.').reverse() as [string, ...string[]];
+        const populatePath = remainingPopulatePaths.reduce<PopulatePath>(
+          (acc, path) => ({ path, populate: acc }),
+          firstPopulatePath
         );
+        docsPromise = docsPromise.populate(populatePath);
       });
     }
 
@@ -80,7 +82,6 @@ const paginate = (schema: Schema<any>): void => {
 
 export default paginate;
 
-// @ts-expect-error: CJS compat — tests require() this file directly and expect a function
+// CJS compat: tests require this plugin directly until Batch 9.
 module.exports = paginate;
-// @ts-expect-error: preserve .default for ESM-style barrel re-exports
 module.exports.default = paginate;

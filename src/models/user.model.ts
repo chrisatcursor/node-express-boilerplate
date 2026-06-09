@@ -99,7 +99,6 @@ const User = mongoose.model<IUser, IUserModel>('User', userSchema);
 
 export default User;
 
-// @ts-expect-error: CJS compat — test fixtures require() this file directly and expect the model
+// CJS compat: test fixtures require this model directly until Batch 9.
 module.exports = User;
-// @ts-expect-error: preserve .default for ESM-style barrel re-exports
 module.exports.default = User;
