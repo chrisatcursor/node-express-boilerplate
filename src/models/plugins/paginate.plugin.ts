@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 
-import { Schema, Document, Model } from 'mongoose';
+import { Schema, Document, Model, FilterQuery } from 'mongoose';
 
 export interface PaginateOptions {
   sortBy?: string;
@@ -18,7 +18,7 @@ export interface QueryResult {
 }
 
 export interface PaginateModel<T extends Document> extends Model<T> {
-  paginate(filter: Record<string, unknown>, options: PaginateOptions): Promise<QueryResult>;
+  paginate(filter: FilterQuery<T>, options: PaginateOptions): Promise<QueryResult>;
 }
 
 // TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
@@ -27,7 +27,7 @@ const paginate = <T extends Document>(schema: Schema<T>): void => {
   // eslint-disable-next-line dot-notation
   schema.statics['paginate'] = async function (
     this: Model<T>,
-    filter: Record<string, unknown>,
+    filter: FilterQuery<T>,
     options: PaginateOptions
   ): Promise<QueryResult> {
     let sort = '';
@@ -47,11 +47,11 @@ const paginate = <T extends Document>(schema: Schema<T>): void => {
     const skip = (page - 1) * limit;
 
     const countPromise = this.countDocuments(filter).exec();
-    let docsPromise = this.find(filter).sort(sort).skip(skip).limit(limit);
+    let docsQuery = this.find(filter).sort(sort).skip(skip).limit(limit);
 
     if (options.populate) {
       options.populate.split(',').forEach((populateOption: string) => {
-        docsPromise = docsPromise.populate(
+        docsQuery = docsQuery.populate(
           // TODO(ts-migration): nested populate objects use mixed string/object accumulator
           populateOption
             .split('.')
@@ -61,7 +61,7 @@ const paginate = <T extends Document>(schema: Schema<T>): void => {
       });
     }
 
-    docsPromise = docsPromise.exec();
+    const docsPromise = docsQuery.exec();
 
     return Promise.all([countPromise, docsPromise]).then((values) => {
       const [totalResults, results] = values as [number, Document[]];
