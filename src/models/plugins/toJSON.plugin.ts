@@ -11,9 +11,8 @@ const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: numbe
 };
 
 // TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
-const toJSON = (schema: Schema<any>): void => {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
-  const schemaWithOptions = schema as Schema<any> & {
+const toJSON = <T extends Document>(schema: Schema<T>): void => {
+  const schemaWithOptions = schema as Schema<T> & {
     options: {
       toJSON?: {
         transform?: (doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown;
