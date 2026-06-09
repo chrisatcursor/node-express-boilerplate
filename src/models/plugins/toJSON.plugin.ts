@@ -1,6 +1,20 @@
 /* eslint-disable no-param-reassign */
 
-import { Schema, Document } from 'mongoose';
+import { Schema, Document, SchemaOptions } from 'mongoose';
+
+interface SchemaWithMutableToJSONOptions {
+  options: SchemaOptions & {
+    toJSON?: {
+      transform?: (doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown;
+    };
+  };
+}
+
+interface SchemaPathWithPrivateOption {
+  options?: {
+    private?: boolean;
+  };
+}
 
 const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: number): void => {
   if (index === path.length - 1) {
@@ -10,20 +24,19 @@ const deleteAtPath = (obj: Record<string, unknown>, path: string[], index: numbe
   deleteAtPath(obj[path[index] as string] as Record<string, unknown>, path, index + 1);
 };
 
-// TODO(ts-migration): Schema type parameter kept as base Schema for plugin compatibility with typed schemas
-const toJSON = (schema: Schema<any>): void => {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
+const toJSON = <T extends Document>(schema: Schema<T>): void => {
+  const schemaWithOptions = schema as unknown as SchemaWithMutableToJSONOptions;
   let transform: ((doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) => unknown) | undefined;
-  if (schema.options.toJSON && schema.options.toJSON.transform) {
-    transform = schema.options.toJSON.transform as typeof transform;
+  if (schemaWithOptions.options.toJSON && schemaWithOptions.options.toJSON.transform) {
+    transform = schemaWithOptions.options.toJSON.transform;
   }
 
-  schema.options.toJSON = Object.assign(schema.options.toJSON || {}, {
+  schemaWithOptions.options.toJSON = Object.assign(schemaWithOptions.options.toJSON || {}, {
     transform(doc: Document, ret: Record<string, unknown>, options: Record<string, unknown>) {
       Object.keys(schema.paths).forEach((path) => {
         // TODO(ts-migration): Mongoose SchemaType does not expose options in its public typedef
-        const schemaPath = schema.paths[path] as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-        if (schemaPath?.options?.private) {
+        const schemaPath = schema.paths[path] as SchemaPathWithPrivateOption;
+        if (schemaPath.options && schemaPath.options.private) {
           deleteAtPath(ret, path.split('.'), 0);
         }
       });

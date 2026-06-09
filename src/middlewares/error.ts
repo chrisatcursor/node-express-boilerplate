@@ -1,0 +1,53 @@
+import { NextFunction, Request, Response } from 'express';
+import httpStatus from 'http-status';
+import mongoose from 'mongoose';
+import config = require('../config/config');
+import logger = require('../config/logger');
+import ApiError = require('../utils/ApiError');
+
+interface ErrorLike {
+  statusCode?: number;
+  message?: string;
+  stack?: string;
+}
+
+const isErrorLike = (err: unknown): err is ErrorLike => typeof err === 'object' && err !== null;
+
+const errorConverter = (err: unknown, _req: Request, _res: Response, next: NextFunction): void => {
+  let error = err;
+  if (!(error instanceof ApiError)) {
+    const statusCode =
+      (isErrorLike(error) && error.statusCode) || error instanceof mongoose.Error
+        ? httpStatus.BAD_REQUEST
+        : httpStatus.INTERNAL_SERVER_ERROR;
+    const message = (isErrorLike(error) && error.message) || (httpStatus[statusCode] as string);
+    const stack = (isErrorLike(error) && error.stack) || '';
+    error = new ApiError(statusCode, message, false, stack);
+  }
+  next(error);
+};
+
+const errorHandler = (err: ApiError, _req: Request, res: Response, _next?: NextFunction): void => {
+  void _next;
+  let { statusCode, message } = err;
+  if (config.env === 'production' && !err.isOperational) {
+    statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+    message = httpStatus[httpStatus.INTERNAL_SERVER_ERROR] as string;
+  }
+
+  res.locals.errorMessage = err.message;
+
+  const response = {
+    code: statusCode,
+    message,
+    ...(config.env === 'development' && { stack: err.stack }),
+  };
+
+  if (config.env === 'development') {
+    logger.error(err);
+  }
+
+  res.status(statusCode).send(response);
+};
+
+export { errorConverter, errorHandler };
