@@ -5,12 +5,6 @@ import { roleRights } from '../config/roles';
 import type { IUser } from '../models/user.model';
 import ApiError = require('../utils/ApiError');
 
-declare global {
-  namespace Express {
-    interface User extends IUser {}
-  }
-}
-
 const verifyCallback =
   (req: Request, resolve: () => void, reject: (err: ApiError) => void, requiredRights: string[]) =>
   async (err: Error | null, user: IUser | false, info: unknown): Promise<void> => {
@@ -36,11 +30,7 @@ const auth =
   (...requiredRights: string[]): RequestHandler =>
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
-      passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRights))(
-        req,
-        res,
-        next
-      );
+      passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRights))(req, res, next);
     })
       .then(() => next())
       .catch((err: Error) => next(err));

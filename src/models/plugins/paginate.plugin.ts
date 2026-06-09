@@ -28,10 +28,7 @@ export interface PaginateModel<T extends Document> extends Model<T> {
 const paginate = <T extends Document>(schema: Schema<T>): void => {
   // TODO(ts-migration): Mongoose statics type does not include custom methods
   // eslint-disable-next-line dot-notation
-  schema.statics['paginate'] = async function (
-    filter: FilterQuery<T>,
-    options: PaginateOptions
-  ): Promise<QueryResult> {
+  schema.statics['paginate'] = async function (filter: FilterQuery<T>, options: PaginateOptions): Promise<QueryResult> {
     let sort = '';
     if (options.sortBy) {
       const sortingCriteria: string[] = [];
@@ -54,10 +51,7 @@ const paginate = <T extends Document>(schema: Schema<T>): void => {
 
     if (options.populate) {
       options.populate.split(',').forEach((populateOption: string) => {
-        const [firstPopulatePath, ...remainingPopulatePaths] = populateOption.split('.').reverse() as [
-          string,
-          ...string[]
-        ];
+        const [firstPopulatePath, ...remainingPopulatePaths] = populateOption.split('.').reverse() as [string, ...string[]];
         const populatePath = remainingPopulatePaths.reduce<PopulatePath>(
           (acc, path) => ({ path, populate: acc }),
           firstPopulatePath
