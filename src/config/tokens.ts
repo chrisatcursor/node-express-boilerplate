@@ -3,8 +3,7 @@ const tokenTypes = {
   REFRESH: 'refresh',
   RESET_PASSWORD: 'resetPassword',
   VERIFY_EMAIL: 'verifyEmail',
-};
+} as const;
 
-module.exports = {
-  tokenTypes,
-};
+// eslint-disable-next-line import/prefer-default-export
+export { tokenTypes };
