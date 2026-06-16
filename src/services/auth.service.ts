@@ -65,10 +65,4 @@ const verifyEmail = async (verifyEmailToken: string): Promise<void> => {
   }
 };
 
-export {
-  loginUserWithEmailAndPassword,
-  logout,
-  refreshAuth,
-  resetPassword,
-  verifyEmail,
-};
+export { loginUserWithEmailAndPassword, logout, refreshAuth, resetPassword, verifyEmail };

@@ -50,11 +50,4 @@ const deleteUserById = async (userId: UserId): Promise<IUser> => {
   return user;
 };
 
-export {
-  createUser,
-  queryUsers,
-  getUserById,
-  getUserByEmail,
-  updateUserById,
-  deleteUserById,
-};
+export { createUser, queryUsers, getUserById, getUserByEmail, updateUserById, deleteUserById };

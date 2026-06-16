@@ -104,11 +104,4 @@ const generateVerifyEmailToken = async (user: IUser): Promise<string> => {
   return verifyEmailToken;
 };
 
-export {
-  generateToken,
-  saveToken,
-  verifyToken,
-  generateAuthTokens,
-  generateResetPasswordToken,
-  generateVerifyEmailToken,
-};
+export { generateToken, saveToken, verifyToken, generateAuthTokens, generateResetPasswordToken, generateVerifyEmailToken };
